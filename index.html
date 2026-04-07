@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monarch System v8.1</title>
+    <title>Monarch System v8.2</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --neon: #00d4ff; --dark: #020b12; --panel: rgba(5, 15, 25, 0.95); }
         body { background: radial-gradient(circle at center, #0a192f 0%, var(--dark) 100%); color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; touch-action: manipulation; }
         
-        .settings-btn { position: fixed; top: 15px; left: 15px; font-size: 1.8rem; cursor: pointer; z-index: 3000; color: var(--neon); filter: drop-shadow(0 0 5px var(--neon)); }
-        .settings-menu { display: none; position: fixed; top: 60px; left: 15px; background: var(--panel); border: 1px solid var(--neon); padding: 15px; z-index: 3000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        /* Botão de configurações movido para a direita */
+        .settings-btn { position: fixed; top: 15px; right: 15px; font-size: 1.8rem; cursor: pointer; z-index: 3000; color: var(--neon); filter: drop-shadow(0 0 5px var(--neon)); }
+        .settings-menu { display: none; position: fixed; top: 60px; right: 15px; background: var(--panel); border: 1px solid var(--neon); padding: 15px; z-index: 3000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
 
         .hud-container { max-width: 420px; margin: 10px auto; padding: 20px; background: var(--panel); border: 1px solid var(--neon); box-shadow: 0 0 25px rgba(0, 212, 255, 0.2); position: relative; }
         .screen { display: none; min-height: 550px; }
@@ -20,19 +21,10 @@
         
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon); border-bottom: 1px solid var(--neon); padding-bottom: 8px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* Ajuste nas letras da Daily Quest */
         .daily-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            background: rgba(0, 212, 255, 0.05); 
-            border: 1px solid rgba(0, 212, 255, 0.1); 
-            margin-bottom: 12px; 
-            padding: 15px; 
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 0.9rem; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            display: flex; align-items: center; gap: 15px; background: rgba(0, 212, 255, 0.05); 
+            border: 1px solid rgba(0, 212, 255, 0.1); margin-bottom: 12px; padding: 15px; 
+            font-family: 'Orbitron', sans-serif; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;
         }
         .daily-item input[type="checkbox"] { transform: scale(1.3); accent-color: var(--neon); cursor: pointer; }
         .daily-item span.completed { text-decoration: line-through; color: #444; }
@@ -69,7 +61,7 @@
 <div class="hud-container">
     <div id="status-screen" class="screen active">
         <div class="hud-header"><h1>PLAYER STATUS</h1></div>
-        <h2 style="font-family:'Orbitron'; margin:0; font-size: 1.6rem;">SUNG JIN-WOO</h2>
+        <h2 style="font-family:'Orbitron'; margin:0; font-size: 1.6rem;">SUNG JIN-WOO <span id="rank-txt" style="float:right; font-size:1rem; margin-top:8px; color:var(--neon);">[RANK E]</span></h2>
         <p style="font-size: 0.9rem; margin: 8px 0;">LVL: <span id="lvl">1</span> | XP: <span id="xp-txt">0/100</span></p>
         <div class="xp-bg"><div id="xp-fill" class="xp-fill"></div></div>
         <div class="stat-row"><span>STR</span> <span id="str" class="stat-val">10</span></div>
@@ -150,7 +142,18 @@
         document.getElementById('xp-fill').style.width = `${state.xp}%`;
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
 
-        const dailyTasks = ["Flexões: 12", "Abdominais: 12", "Agachamentos: 12", "Corrida: 2km"];
+        // Lógica do Sistema de Rank e Dificuldade Dinâmica
+        let rank = "E";
+        let dailyTasks = ["Flexões: 12", "Abdominais: 12", "Agachamentos: 12", "Corrida: 2km"];
+        
+        if (state.lvl >= 81) { rank = "S"; dailyTasks = ["Flexões: 200", "Abdominais: 200", "Agachamentos: 200", "Corrida: 20km"]; }
+        else if (state.lvl >= 61) { rank = "A"; dailyTasks = ["Flexões: 150", "Abdominais: 150", "Agachamentos: 150", "Corrida: 15km"]; }
+        else if (state.lvl >= 41) { rank = "B"; dailyTasks = ["Flexões: 100", "Abdominais: 100", "Agachamentos: 100", "Corrida: 10km"]; }
+        else if (state.lvl >= 21) { rank = "C"; dailyTasks = ["Flexões: 50", "Abdominais: 50", "Agachamentos: 50", "Corrida: 5km"]; }
+        else if (state.lvl >= 11) { rank = "D"; dailyTasks = ["Flexões: 25", "Abdominais: 25", "Agachamentos: 25", "Corrida: 3km"]; }
+
+        document.getElementById('rank-txt').innerText = `[RANK ${rank}]`;
+
         document.getElementById('daily-list').innerHTML = dailyTasks.map((t, i) => `
             <div class="daily-item">
                 <input type="checkbox" onchange="toggleDaily(${i})" ${state.dailyChecks[i] ? 'checked' : ''} ${state.dailyDone ? 'disabled' : ''}> 
@@ -210,7 +213,7 @@
                 datasets: [{ data: [state.str, state.agi, state.vit, state.int], backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2, pointRadius: 2 }]
             },
             options: {
-                scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff', font: { family: 'Orbitron' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 40 } },
+                scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff', font: { family: 'Orbitron' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 30 } },
                 plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false
             }
         });
