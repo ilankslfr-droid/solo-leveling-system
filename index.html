@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solo Leveling: System 3.0</title>
+    <link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root { --blue: #00d4ff; --dark: #050505; --red: #ff3333; --panel: rgba(0, 212, 255, 0.1); }
@@ -169,7 +175,7 @@
                 `;
             });
         }
-        
+
         // Checar tempo a cada 5 segundos
         setInterval(checkTime, 5000);
         render();
