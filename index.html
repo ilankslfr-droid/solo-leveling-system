@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: System HUD Final</title>
+    <title>Solo Leveling HUD - Sistema Evolutivo</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -30,13 +30,11 @@
         .quest-card { background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.3); padding: 15px; margin-bottom: 12px; }
         .main-btn { width: 100%; background: #000; border: 1px solid var(--neon-blue); color: white; padding: 12px; margin-top: 10px; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; }
         .main-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; opacity: 0.5; }
-        .main-btn:hover:not(:disabled) { background: var(--neon-blue); color: black; }
 
-        input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 10px; margin-bottom: 8px; box-sizing: border-box; font-family: inherit; }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--neon-blue); cursor: pointer; }
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon-blue); z-index: 100; }
         nav button { flex: 1; padding: 18px; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.7rem; }
-        nav button.active-nav { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
-        .timer-display { font-family: 'Orbitron'; color: #ff4444; font-size: 0.8rem; }
+        nav button.active-nav { color: var(--neon-blue); }
     </style>
 </head>
 <body>
@@ -64,30 +62,27 @@
             <div class="log-title">SYSTEM NOTIFICATIONS</div>
             <div class="log-text">
                 <span>[AVISO: Monitoramento biométrico ativo.]</span>
-                <span>[DICA: Complete o treino diário para evitar a Zona de Punição.]</span>
+                <span>[DICA: Atributos equilibrados são a chave para o Rank S.]</span>
             </div>
         </div>
     </div>
 
     <div id="daily-screen" class="screen">
-        <div class="hud-header"><h1>DAILY QUEST: PREPARAR PARA O DESPERTAR</h1></div>
+        <div class="hud-header"><h1>DAILY QUEST: TREINO DIÁRIO</h1></div>
         <div class="quest-card">
-            <div id="daily-list"></div>
+            <div id="daily-list">
+                </div>
             <button id="btn-daily" class="main-btn" disabled onclick="completeDaily()">COLETAR RECOMPENSA</button>
+        </div>
+        <div style="font-size: 0.7rem; color: #ff4444; text-align: center; margin-top: 10px;">
+            *Falha em completar pode resultar em penalidades.
         </div>
     </div>
 
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>CUSTOM QUESTS</h1></div>
-        <div class="quest-card">
-            <input type="text" id="q-name" placeholder="Nome da missão...">
-            <div style="display:flex; gap:5px;">
-                <select id="q-focus"><option value="str">FORÇA</option><option value="agi">AGILIDADE</option><option value="vit">VITALIDADE</option><option value="int">INTELIGÊNCIA</option></select>
-                <input type="number" id="q-time" placeholder="Tempo">
+        <div id="custom-list">
             </div>
-            <button class="main-btn" onclick="addCustom()">INICIAR MISSÃO ESPECIAL</button>
-        </div>
-        <div id="custom-list"></div>
     </div>
 </div>
 
@@ -98,66 +93,56 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('solo_v14')) || { 
+    let state = JSON.parse(localStorage.getItem('solo_v15')) || { 
         lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, 
-        quests: [], dailyChecks: [false,false,false,false], dailyDone: false 
+        dailyChecks: [false,false,false,false], dailyDone: false 
     };
     let myChart;
 
+    // SISTEMA DE DIFICULDADE: Aumenta reps a cada Nível
     function getRankInfo(lvl) {
-        if(lvl >= 50) return {r:"S", reps: 100, km: 10};
-        if(lvl >= 35) return {r:"A", reps: 80, km: 8};
-        if(lvl >= 20) return {r:"B", reps: 50, km: 5};
-        if(lvl >= 10) return {r:"C", reps: 30, km: 3};
-        if(lvl >= 5)  return {r:"D", reps: 20, km: 2};
-        return {r:"E", reps: 10, km: 1};
+        // Base: 10 reps + 2 a cada nível / 1km + 0.2km a cada nível
+        let reps = 10 + (lvl * 2);
+        let km = (1 + (lvl * 0.1)).toFixed(1);
+        
+        let rank = "E";
+        if(lvl >= 5) rank = "D";
+        if(lvl >= 15) rank = "C";
+        if(lvl >= 25) rank = "B";
+        if(lvl >= 40) rank = "A";
+        if(lvl >= 60) rank = "S";
+
+        return { rank, reps, km };
     }
 
-    function save() { localStorage.setItem('solo_v14', JSON.stringify(state)); render(); }
+    function save() { localStorage.setItem('solo_v15', JSON.stringify(state)); render(); }
 
     function render() {
         const info = getRankInfo(state.lvl);
-        document.getElementById('rank-name').innerText = info.r;
+        document.getElementById('rank-name').innerText = info.rank;
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('xp-txt').innerText = state.xp + "/100";
         document.getElementById('xp-fill').style.width = state.xp + "%";
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
 
-        // Daily Quest Dinâmica
+        // Daily Quest Dinâmica (O que você pediu antes)
         const dList = document.getElementById('daily-list');
         const tasks = [
-            `${info.reps} Flexões`, 
-            `${info.reps} Abdominais`, 
-            `${info.reps} Agachamentos`, 
-            `${info.km}km de Corrida`
+            `Flexões: ${info.reps} reps`, 
+            `Abdominais: ${info.reps} reps`, 
+            `Agachamentos: ${info.reps} reps`, 
+            `Corrida: ${info.km} km`
         ];
+        
         dList.innerHTML = tasks.map((t, i) => `
-            <div style="padding:12px 0; border-bottom:1px solid #111; display:flex; align-items:center; gap:10px;">
+            <div style="padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px;">
                 <input type="checkbox" onchange="toggleD(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}>
-                <span style="${state.dailyChecks[i]?'text-decoration:line-through; opacity:0.5':''}">${t}</span>
+                <span style="${state.dailyChecks[i]?'text-decoration:line-through; opacity:0.4; color:var(--neon-blue)':''}">${t}</span>
             </div>
         `).join('');
+        
         document.getElementById('btn-daily').disabled = !state.dailyChecks.every(c=>c) || state.dailyDone;
 
-        // Custom Quests com Timers
-        const cList = document.getElementById('custom-list');
-        cList.innerHTML = state.quests.map(q => {
-            const ready = q.endTime <= Date.now();
-            return `
-            <div class="quest-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:0.6rem; color:var(--neon-blue)">FOCO: ${q.focus.toUpperCase()}</div>
-                        <b>${q.name}</b><br>
-                        <span class="timer-display" id="t-${q.id}">${ready?'OBJETIVO CONCLUÍDO':'--:--'}</span>
-                    </div>
-                    <button onclick="compC(${q.id})" ${!ready?'disabled':''} 
-                        style="background:${ready?'var(--neon-blue)':'#222'}; color:black; border:none; padding:10px; font-family:'Orbitron'; font-weight:bold;">
-                        ${ready?'FINALIZAR':'BLOQUEADO'}
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
         updateRadar();
     }
 
@@ -170,61 +155,37 @@
                 labels:['STR','AGI','VIT','INT'],
                 datasets:[{
                     data:[state.str, state.agi, state.vit, state.int],
-                    backgroundColor:'rgba(0,212,255,0.2)',
+                    backgroundColor:'rgba(0, 212, 255, 0.2)',
                     borderColor:'#00d4ff',
                     borderWidth:2,
                     pointRadius: 2
                 }]
             },
             options:{
-                scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron', size:12}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }},
+                scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron', size:11}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }},
                 plugins:{legend:{display:false}},
                 responsive:true, maintainAspectRatio:false
             }
         });
     }
 
-    setInterval(() => {
-        state.quests.forEach(q => {
-            const diff = q.endTime - Date.now();
-            const el = document.getElementById(`t-${q.id}`);
-            if(el && diff > 0) {
-                const m = Math.floor(diff/60000); const s = Math.floor((diff%60000)/1000);
-                el.innerText = `${m}:${s<10?'0':''}${s} RESTANTE`;
-            } else if(el && diff <= 0) { render(); }
-        });
-    }, 1000);
-
-    function addCustom() {
-        const n = document.getElementById('q-name').value; 
-        const t = parseInt(document.getElementById('q-time').value) || 0;
-        if(n) { 
-            state.quests.push({id: Date.now(), name: n, focus: document.getElementById('q-focus').value, endTime: Date.now() + (t*60000)}); 
-            document.getElementById('q-name').value = "";
-            save(); 
-        }
-    }
-
-    function compC(id) {
-        const q = state.quests.find(x => x.id === id);
-        state[q.focus]++; state.xp += 15; state.quests = state.quests.filter(x => x.id !== id);
-        checkLvl(); save();
-    }
-
-    function toggleD(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    
-    function completeDaily() { 
-        state.xp += 40; 
-        state.dailyDone = true; 
-        checkLvl(); 
+    function toggleD(i) { 
+        state.dailyChecks[i] = !state.dailyChecks[i]; 
         save(); 
     }
-
-    function checkLvl() { 
+    
+    function completeDaily() { 
+        state.xp += 50; // XP por completar o treino diário
+        state.dailyDone = true;
+        // Ao completar, ganha 1 ponto em cada atributo físico
+        state.str++; state.agi++; state.vit++;
+        
         while(state.xp >= 100){ 
             state.xp -= 100; 
             state.lvl++; 
         } 
+        save(); 
+        alert("QUEST CONCLUÍDA! Atributos e XP recebidos.");
     }
 
     function showScreen(id) { 
