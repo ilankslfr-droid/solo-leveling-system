@@ -250,7 +250,7 @@
         if (radarChart) radarChart.destroy();
         
         const dataValues = [state.str, state.agi, state.vit, state.int];
-        const maxLimit = Math.max(...dataValues) + 2;
+        const maxLimit = Math.max(...dataValues) + 5;
 
         radarChart = new Chart(ctx, {
             type: 'radar',
