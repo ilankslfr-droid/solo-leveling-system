@@ -3,61 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: System HUD 7.0</title>
+    <title>Solo Leveling: System HUD 11.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root { --neon-blue: #00d4ff; --bg-dark: #020b12; }
+        
         body { 
             background: radial-gradient(circle at center, #0a192f 0%, var(--bg-dark) 100%); 
-            color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 90px;
-            min-height: 100vh; overflow-x: hidden;
+            color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 100px;
         }
+
         .hud-container {
-            max-width: 450px; margin: 20px auto; padding: 25px;
-            background: rgba(5, 15, 25, 0.9); border: 1px solid var(--neon-blue);
+            max-width: 420px; margin: 20px auto; padding: 20px;
+            background: rgba(5, 15, 25, 0.95); border: 1px solid var(--neon-blue);
             box-shadow: 0 0 25px rgba(0, 212, 255, 0.15); backdrop-filter: blur(15px);
-            position: relative;
+            position: relative; min-height: 520px; /* Mantivemos o tamanho para o Log caber */
         }
-        .screen { display: none; animation: fadeIn 0.3s ease; }
-        .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .screen { display: none; }
+        .active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .rank-display {
             font-family: 'Orbitron'; font-size: 5.5rem; position: absolute;
-            top: 40px; right: 20px; opacity: 0.15; color: var(--neon-blue); 
-            pointer-events: none; line-height: 1; text-shadow: 0 0 15px var(--neon-blue);
+            top: 45px; right: 25px; opacity: 0.12; color: var(--neon-blue); 
+            pointer-events: none; line-height: 1;
         }
 
         .hud-header h1 { 
             font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon-blue); 
-            text-shadow: 0 0 8px var(--neon-blue); border-bottom: 1px solid var(--neon-blue); 
-            padding-bottom: 5px; margin-bottom: 20px;
+            border-bottom: 1px solid var(--neon-blue); padding-bottom: 5px; margin-bottom: 15px;
         }
 
-        .quest-card { 
-            background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.3); 
-            padding: 15px; margin-bottom: 15px; 
+        .stat-row { 
+            display: flex; justify-content: space-between; 
+            padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); 
+            font-size: 1rem;
         }
-        
-        .daily-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .daily-item input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--neon-blue); cursor: pointer; }
-
-        .main-btn {
-            width: 100%; background: #000; border: 1px solid var(--neon-blue); color: white;
-            padding: 12px; margin-top: 10px; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s;
-        }
-        .main-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; background: none; }
-
-        input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 10px; margin-bottom: 10px; font-family: 'Roboto Condensed'; }
-
-        .stat-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(0,212,255,0.1); }
         .stat-value { color: var(--neon-blue); font-family: 'Orbitron'; font-weight: bold; }
 
-        nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.95); border-top: 1px solid var(--neon-blue); z-index: 100; }
-        nav button { flex: 1; padding: 15px; background: none; border: none; color: #555; font-family: 'Orbitron'; font-size: 0.65rem; }
-        nav button.active-nav { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        .xp-container { background:#111; height:6px; width:100%; margin:10px 0; border: 1px solid #222; }
+        .xp-bar { background:var(--neon-blue); height:100%; width:0%; transition: 1s; box-shadow: 0 0 10px var(--neon-blue); }
 
-        .timer-display { font-family: 'Orbitron'; color: #ff3333; font-size: 0.8rem; margin-top: 5px; }
+        /* PAINEL DE LOGS (O QUE PREENCHE O ESPAÇO) */
+        .system-log {
+            margin-top: 25px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.1); padding: 10px;
+            height: 120px; overflow-y: hidden; position: relative;
+        }
+        .log-title { font-family: 'Orbitron'; font-size: 0.65rem; color: var(--neon-blue); margin-bottom: 8px; opacity: 0.7; }
+        .log-text { font-size: 0.75rem; color: #aaa; line-height: 1.6; font-style: italic; }
+        .log-text span { display: block; margin-bottom: 4px; border-left: 2px solid var(--neon-blue); padding-left: 8px; }
+
+        nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon-blue); z-index: 100; }
+        nav button { flex: 1; padding: 18px; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.7rem; }
+        nav button.active-nav { color: var(--neon-blue); }
+
+        .quest-card { background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.3); padding: 15px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -66,40 +68,45 @@
     <div id="status-screen" class="screen active">
         <div class="rank-display" id="rank-letter">E</div>
         <div class="hud-header"><h1>PLAYER STATUS</h1></div>
-        <div style="margin-bottom: 25px;"><h2 style="font-family:'Orbitron'; margin:0; font-size: 1.8rem;">HUNTER</h2><div style="color:var(--neon-blue); font-size: 0.9rem; letter-spacing:2px;">RANK <span id="rank-name">E</span> | CLASSE: HUMANO</div></div>
-        <div style="font-size: 0.9rem; display: flex; justify-content: space-between;"><span>LEVEL: <span id="lvl">1</span></span><span>XP: <span id="xp-txt">0/100</span></span></div>
-        <div style="background:#111; height:6px; width:100%; margin:10px 0;"><div id="xp-fill" style="background:var(--neon-blue); height:100%; width:0%; transition:1s;"></div></div>
-        <div id="pts-box" style="color:gold; font-family:'Orbitron'; font-size:0.8rem; margin: 15px 0; text-align: center; display:none;">PONTOS DISPONÍVEIS: <span id="pts">0</span></div>
+        
+        <div style="margin-bottom: 15px;">
+            <h2 style="font-family:'Orbitron'; margin:0; font-size: 1.8rem;">HUNTER</h2>
+            <div style="color:var(--neon-blue); font-size: 0.9rem; letter-spacing:2px;">RANK <span id="rank-name">E</span> | CLASSE: HUMANO</div>
+        </div>
+
+        <div style="font-size: 0.85rem; display: flex; justify-content: space-between;">
+            <span>LEVEL: <span id="lvl">1</span></span>
+            <span>XP: <span id="xp-txt">0/100</span></span>
+        </div>
+        <div class="xp-container"><div class="xp-bar" id="xp-fill"></div></div>
+        
         <div class="stat-row"><span>FORÇA (STR)</span> <span class="stat-value" id="str">10</span></div>
         <div class="stat-row"><span>AGILIDADE (AGI)</span> <span class="stat-value" id="agi">10</span></div>
         <div class="stat-row"><span>VITALIDADE (VIT)</span> <span class="stat-value" id="vit">10</span></div>
         <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span class="stat-value" id="int">10</span></div>
+
+        <div class="system-log">
+            <div class="log-title">NOTIFICAÇÕES DO SISTEMA</div>
+            <div class="log-text" id="log-content">
+                <span>[AVISO: O sistema está monitorando o Hunter.]</span>
+                <span>[DICA: Complete a Daily Quest para evitar punições.]</span>
+                <span>[STATUS: Condição física estável.]</span>
+            </div>
+        </div>
     </div>
 
     <div id="daily-screen" class="screen">
-        <div class="hud-header"><h1>SYSTEM: DAILY QUEST</h1></div>
-        <div class="quest-card">
-            <div id="daily-checklist"></div>
-            <button id="finish-daily" class="main-btn" disabled onclick="completeDaily()">CONCLUIR MISSÃO DIÁRIA</button>
-        </div>
+        <div class="hud-header"><h1>DAILY QUEST</h1></div>
+        <div class="quest-card" id="daily-checklist"></div>
     </div>
 
     <div id="custom-screen" class="screen">
-        <div class="hud-header"><h1>ATTRIBUTE QUESTS</h1></div>
-        <div class="quest-card" style="background: rgba(255,255,255,0.03);">
-            <input type="text" id="q-name" placeholder="Ex: Treino de Boxe...">
-            <div style="display:flex; gap:10px;">
-                <select id="q-focus" style="flex:2;">
-                    <option value="str">FOCO: FORÇA</option>
-                    <option value="agi">FOCO: AGILIDADE</option>
-                    <option value="vit">FOCO: VITALIDADE</option>
-                    <option value="int">FOCO: INTELIGÊNCIA</option>
-                </select>
-                <input type="number" id="q-time" placeholder="Min" style="flex:1;">
-            </div>
-            <button class="main-btn" onclick="addCustomQuest()">CRIAR MISSÃO (+15 XP)</button>
+        <div class="hud-header"><h1>CUSTOM QUESTS</h1></div>
+        <div style="padding:10px; border:1px dashed #333; margin-bottom:15px;">
+            <input type="text" id="q-name" placeholder="Nome do treino..." style="width:100%; background:none; border:1px solid #333; color:white; padding:10px; margin-bottom:5px;">
+            <button onclick="addCustom()" style="width:100%; background:var(--neon-blue); border:none; padding:10px; font-family:'Orbitron';">CRIAR MISSÃO</button>
         </div>
-        <div id="custom-quest-list"></div>
+        <div id="custom-list"></div>
     </div>
 </div>
 
@@ -110,96 +117,41 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('solo_system_v7')) || {
-        lvl: 1, xp: 0, pts: 0, str: 10, agi: 10, vit: 10, int: 10, 
-        quests: [], dailyDone: false, dailyChecks: [false, false, false, false]
-    };
-
-    function save() { localStorage.setItem('solo_system_v7', JSON.stringify(state)); render(); }
+    let state = JSON.parse(localStorage.getItem('solo_v11')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], quests: [] };
 
     function render() {
-        const info = (l) => l >= 46 ? {r:"S",reps:100,km:10}: l>=31 ? {r:"A",reps:70,km:7}: l>=21 ? {r:"B",reps:50,km:5}: l>=13 ? {r:"C",reps:30,km:3}: l>=6 ? {r:"D",reps:20,km:2}: {r:"E",reps:10,km:1};
-        const rInfo = info(state.lvl);
-        document.getElementById('rank-letter').innerText = rInfo.r;
-        document.getElementById('rank-name').innerText = rInfo.r;
         document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('xp-txt').innerText = `${state.xp}/100`;
+        document.getElementById('xp-txt').innerText = state.xp + "/100";
         document.getElementById('xp-fill').style.width = state.xp + "%";
-        document.getElementById('pts').innerText = state.pts;
-        document.getElementById('pts-box').style.display = state.pts > 0 ? 'block' : 'none';
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
-
+        
         const dailyList = document.getElementById('daily-checklist');
-        const ex = [`${rInfo.reps} Flexões`, `${rInfo.reps} Abdominais`, `${rInfo.reps} Agachamentos`, `${rInfo.km}km Corrida`];
-        dailyList.innerHTML = ex.map((e, i) => `<div class="daily-item"><input type="checkbox" onchange="toggleCheck(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}> <label>${e}</label></div>`).join('');
-        document.getElementById('finish-daily').disabled = !state.dailyChecks.every(c=>c) || state.dailyDone;
+        const ex = ["10 Flexões", "10 Abdominais", "10 Agachamentos", "1km Corrida"];
+        dailyList.innerHTML = ex.map((e, i) => `
+            <div style="display:flex; gap:12px; margin-bottom:15px;">
+                <input type="checkbox" onchange="toggle(${i})" ${state.dailyChecks[i]?'checked':''}> <label>${e}</label>
+            </div>
+        `).join('');
 
-        const customList = document.getElementById('custom-quest-list');
-        customList.innerHTML = state.quests.map(q => {
-            const isReady = q.endTime <= Date.now();
-            return `
-            <div class="quest-card">
-                <div style="display:flex; justify-content:space-between;">
-                    <div>
-                        <div style="font-size:0.6rem; color:var(--neon-blue); font-family:'Orbitron'">${q.focus.toUpperCase()} TRAINING</div>
-                        <div style="font-family:'Orbitron'; font-size: 1rem;">${q.name}</div>
-                        ${!isReady ? `<div class="timer-display" id="timer-${q.id}">AGUARDE...</div>` : `<div style="color:#00ff00; font-size:0.7rem;">MISSÃO PRONTA!</div>`}
-                    </div>
-                    <button id="btn-${q.id}" onclick="completeCustom(${q.id})" ${!isReady ? 'disabled' : ''} 
-                    style="width:70px; background:${isReady?'var(--neon-blue)':'#222'}; border:none; color:black; font-family:'Orbitron'; font-weight:bold; cursor:${isReady?'pointer':'not-allowed'}">
-                    ${isReady ? 'DONE' : 'LOCKED'}
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
+        const customList = document.getElementById('custom-list');
+        customList.innerHTML = state.quests.map(q => `<div class="quest-card">${q.name}</div>`).join('');
     }
 
-    function updateTimers() {
-        state.quests.forEach(q => {
-            const timeLeft = q.endTime - Date.now();
-            const el = document.getElementById(`timer-${q.id}`);
-            if (el && timeLeft > 0) {
-                const min = Math.floor(timeLeft / 60000);
-                const sec = Math.floor((timeLeft % 60000) / 1000);
-                el.innerText = `${min}:${sec < 10 ? '0' : ''}${sec} RESTANTE`;
-            } else if (el && timeLeft <= 0) {
-                render();
-            }
-        });
-    }
-    setInterval(updateTimers, 1000);
-
-    function addCustomQuest() {
-        const name = document.getElementById('q-name').value;
-        const focus = document.getElementById('q-focus').value;
-        const time = parseInt(document.getElementById('q-time').value) || 0;
-        if(name) {
-            const endTime = Date.now() + (time * 60000);
-            state.quests.push({ name, focus, endTime, id: Date.now() });
-            document.getElementById('q-name').value = "";
-            document.getElementById('q-time').value = "";
-            save();
-        }
-    }
-
-    function completeCustom(id) {
-        const q = state.quests.find(q => q.id === id);
-        if(q.endTime <= Date.now()){
-            state[q.focus]++; state.xp += 15;
-            state.quests = state.quests.filter(item => item.id !== id);
-            while(state.xp >= 100){ state.xp -= 100; state.lvl++; state.pts += 5; }
-            save();
-        }
-    }
-
-    function toggleCheck(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    function completeDaily() { state.xp += 40; state.dailyDone = true; save(); }
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
         document.getElementById(id + '-screen').classList.add('active');
         document.getElementById('nav-' + id).classList.add('active-nav');
     }
+
+    function addCustom() {
+        const name = document.getElementById('q-name').value;
+        if(name) { state.quests.push({name}); save(); }
+    }
+
+    function toggle(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
+    function save() { localStorage.setItem('solo_v11', JSON.stringify(state)); render(); }
+    
     render();
 </script>
 </body>
