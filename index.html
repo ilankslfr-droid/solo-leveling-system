@@ -51,8 +51,17 @@
         .player-title { color: var(--neon-blue); font-size: 0.9rem; letter-spacing: 2px; }
 
         .rank-display {
-            font-family: 'Orbitron'; font-size: 4rem; position: absolute;
-            top: 20px; right: 20px; opacity: 0.3; color: var(--neon-blue);
+            font-family: 'Orbitron';
+            font-size: 5.5rem; /* Aumentei um pouco para dar mais impacto */
+            position: absolute;
+            top: 40px;        /* Estava -10px, agora desceu para alinhar com o nome */
+            right: 20px;       /* Recuou um pouco da borda */
+            opacity: 0.15;     /* Ficou um pouco mais sutil como na imagem */
+            color: var(--neon-blue);
+            pointer-events: none;
+            line-height: 1;    /* Garante que o espaço em volta da letra não empurre nada */
+            text-shadow: 0 0 15px var(--neon-blue);
+        }
         }
 
         /* ATRIBUTOS */
