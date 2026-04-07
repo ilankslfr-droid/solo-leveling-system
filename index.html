@@ -3,186 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: System</title>
+    <title>Solo Leveling: System 3.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --system-blue: #00d4ff;
-            --system-dark: #050505;
-            --system-panel: rgba(0, 212, 255, 0.1);
-        }
+        :root { --blue: #00d4ff; --dark: #050505; --red: #ff3333; --panel: rgba(0, 212, 255, 0.1); }
+        body { background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        
+        /* TELAS */
+        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        body {
-            background-color: var(--system-dark);
-            color: white;
-            font-family: 'Rajdhani', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+        h1, h2 { font-family: 'Orbitron', sans-serif; color: var(--blue); text-transform: uppercase; border-bottom: 1px solid var(--blue); }
 
-        .system-container {
-            width: 90%;
-            max-width: 400px;
-            border: 2px solid var(--system-blue);
-            padding: 20px;
-            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-            border-radius: 5px;
-            position: relative;
-        }
+        /* STATUS */
+        .stat-card { background: var(--panel); border: 1px solid var(--blue); padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .lvl-badge { font-size: 2rem; color: var(--blue); text-shadow: 0 0 10px var(--blue); }
+        .points-box { background: gold; color: black; padding: 5px 10px; font-weight: bold; margin-bottom: 15px; text-align: center; }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            text-align: center;
-            color: var(--system-blue);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            border-bottom: 1px solid var(--system-blue);
-            padding-bottom: 10px;
-        }
+        /* MISSÕES */
+        .quest-box { border-left: 4px solid var(--blue); background: #111; padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+        .quest-info { display: flex; flex-direction: column; }
+        .quest-time { color: var(--red); font-weight: bold; font-size: 0.9rem; }
+        
+        /* FORMULÁRIO */
+        .form-group { display: flex; flex-direction: column; gap: 10px; background: #111; padding: 15px; border: 1px solid #333; }
+        input { background: #000; border: 1px solid var(--blue); color: white; padding: 10px; font-family: 'Rajdhani'; }
 
-        .status-line {
-            display: flex;
-            justify-content: space-between;
-            margin: 15px 0;
-            font-size: 1.1rem;
-        }
+        /* NAVEGAÇÃO */
+        nav { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--blue); display: flex; height: 60px; z-index: 100; }
+        nav button { flex: 1; background: none; border: none; color: #555; font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; }
+        nav button.active-nav { color: var(--blue); text-shadow: 0 0 5px var(--blue); }
 
-        .label { color: #888; text-transform: uppercase; }
-        .value { color: var(--system-blue); font-weight: bold; }
-
-        .xp-container {
-            background: #222;
-            height: 10px;
-            width: 100%;
-            border-radius: 5px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-
-        #xp-bar {
-            background: var(--system-blue);
-            height: 100%;
-            width: 0%;
-            transition: width 0.5s ease-in-out;
-            box-shadow: 0 0 10px var(--system-blue);
-        }
-
-        .quest-list {
-            margin-top: 20px;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-        }
-
-        .quest-item {
-            background: var(--system-panel);
-            margin: 10px 0;
-            padding: 15px;
-            border-left: 3px solid var(--system-blue);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        button {
-            background: transparent;
-            border: 1px solid var(--system-blue);
-            color: var(--system-blue);
-            padding: 8px 15px;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            background: var(--system-blue);
-            color: black;
-        }
-
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid gold;
-            padding: 20px;
-            text-align: center;
-            display: none;
-            z-index: 100;
-        }
+        /* TELA DE PUNIÇÃO */
+        #punishment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 0, 0.95); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        
+        .xp-bar { background: #222; height: 8px; width: 100%; border-radius: 4px; margin: 5px 0; }
+        .xp-fill { background: var(--blue); height: 100%; width: 0%; transition: 0.5s; }
     </style>
 </head>
 <body>
 
-    <div class="system-container">
+    <div id="status-screen" class="screen active">
         <h1>Janela de Status</h1>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div class="lvl-badge">LVL <span id="lvl">1</span></div>
+            <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
+            <span id="xp-txt" style="font-size: 0.8rem;">0 / 100 XP</span>
+        </div>
         
-        <div class="status-line">
-            <span class="label">Nível</span>
-            <span class="value" id="lvl-display">1</span>
-        </div>
-
-        <div class="label">Experiência (XP)</div>
-        <div class="xp-container">
-            <div id="xp-bar"></div>
-        </div>
-        <div style="text-align: right; font-size: 0.8rem;" id="xp-text">0 / 100</div>
-
-        <div class="quest-list">
-            <div class="label" style="margin-bottom: 10px;">Missões Diárias</div>
-            
-            <div class="quest-item">
-                <span>Treino Físico</span>
-                <button onclick="addXP(25, 'Missão Concluída!')">OK</button>
-            </div>
-            
-            <div class="quest-item">
-                <span>Estudo/Foco</span>
-                <button onclick="addXP(25, 'Conhecimento Ampliado!')">OK</button>
-            </div>
-        </div>
+        <div id="points-alert" class="points-box" style="display:none;">PONTOS DISPONÍVEIS: <span id="pts">0</span></div>
+        
+        <div class="stat-card"><span>FORÇA (STR)</span> <div><span id="str">10</span> <button onclick="upStat('str')">+</button></div></div>
+        <div class="stat-card"><span>AGILIDADE (AGI)</span> <div><span id="agi">10</span> <button onclick="upStat('agi')">+</button></div></div>
+        <div class="stat-card"><span>INTELIGÊNCIA (INT)</span> <div><span id="int">10</span> <button onclick="upStat('int')">+</button></div></div>
+        <div class="stat-card"><span>VITALIDADE (VIT)</span> <div><span id="vit">10</span> <button onclick="upStat('vit')">+</button></div></div>
     </div>
 
-    <div id="level-up-popup" class="popup">
-        <h2 style="color: gold;">LEVEL UP!</h2>
-        <p>Suas habilidades foram aprimoradas.</p>
-        <button onclick="closePopup()">Confirmar</button>
+    <div id="quest-screen" class="screen">
+        <h1>Missões Diárias</h1>
+        
+        <div class="form-group">
+            <input type="text" id="q-name" placeholder="Título da Missão">
+            <input type="time" id="q-time">
+            <input type="number" id="q-xp" placeholder="XP Recompensa">
+            <button onclick="addQuest()" style="background: var(--blue); padding: 10px; border:none; font-family: 'Orbitron';">CRIAR MISSÃO</button>
+        </div>
+
+        <div id="quest-list"></div>
     </div>
+
+    <div id="punishment-overlay">
+        <h1 style="color: white; border: none; font-size: 3rem;">PUNIÇÃO</h1>
+        <p style="font-size: 1.5rem;">VOCÊ FALHOU NO HORÁRIO</p>
+        <p>-20 XP | -1 EM TODOS OS STATUS</p>
+        <button onclick="acceptPunishment()" style="background: white; color: black; padding: 15px 30px; font-family: 'Orbitron'; font-weight: bold; border: none; cursor: pointer;">ACEITAR</button>
+    </div>
+
+    <nav>
+        <button onclick="showScreen('status')" id="nav-status" class="active-nav">STATUS</button>
+        <button onclick="showScreen('quest')" id="nav-quest">MISSÕES</button>
+    </nav>
 
     <script>
-        let xp = localStorage.getItem('xp') ? parseInt(localStorage.getItem('xp')) : 0;
-        let lvl = localStorage.getItem('lvl') ? parseInt(localStorage.getItem('lvl')) : 1;
+        let state = JSON.parse(localStorage.getItem('solo_v3')) || {
+            lvl: 1, xp: 0, pts: 0, str: 10, agi: 10, int: 10, vit: 10, quests: []
+        };
 
-        function updateDisplay() {
-            document.getElementById('lvl-display').innerText = lvl;
-            document.getElementById('xp-bar').style.width = xp + "%";
-            document.getElementById('xp-text').innerText = xp + " / 100";
-            
-            localStorage.setItem('xp', xp);
-            localStorage.setItem('lvl', lvl);
+        function save() {
+            localStorage.setItem('solo_v3', JSON.stringify(state));
+            render();
         }
 
-        function addXP(amount, msg) {
-            xp += amount;
-            if (xp >= 100) {
-                xp = 0;
-                lvl++;
-                document.getElementById('level-up-popup').style.display = 'block';
+        function showScreen(name) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+            document.getElementById(name + '-screen').classList.add('active');
+            document.getElementById('nav-' + name).classList.add('active-nav');
+        }
+
+        function addQuest() {
+            const name = document.getElementById('q-name').value;
+            const time = document.getElementById('q-time').value;
+            const xp = parseInt(document.getElementById('q-xp').value);
+            if(name && time && xp) {
+                state.quests.push({ name, time, xp, id: Date.now() });
+                save();
             }
-            updateDisplay();
         }
 
-        function closePopup() {
-            document.getElementById('level-up-popup').style.display = 'none';
+        function completeQuest(id) {
+            const idx = state.quests.findIndex(q => q.id === id);
+            state.xp += state.quests[idx].xp;
+            if(state.xp >= 100) { state.xp = 0; state.lvl++; state.pts += 5; }
+            state.quests.splice(idx, 1);
+            save();
         }
 
-        updateDisplay();
+        function checkTime() {
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            
+            state.quests.forEach((q, index) => {
+                if (currentTime > q.time) {
+                    document.getElementById('punishment-overlay').style.display = 'flex';
+                }
+            });
+        }
+
+        function acceptPunishment() {
+            state.xp = Math.max(0, state.xp - 20);
+            state.str = Math.max(1, state.str - 1);
+            state.agi = Math.max(1, state.agi - 1);
+            state.int = Math.max(1, state.int - 1);
+            state.vit = Math.max(1, state.vit - 1);
+            state.quests = []; // Limpa missões falhas
+            document.getElementById('punishment-overlay').style.display = 'none';
+            save();
+        }
+
+        function upStat(s) {
+            if(state.pts > 0) { state[s]++; state.pts--; save(); }
+        }
+
+        function render() {
+            document.getElementById('lvl').innerText = state.lvl;
+            document.getElementById('xp-fill').style.width = state.xp + "%";
+            document.getElementById('xp-txt').innerText = state.xp + " / 100 XP";
+            document.getElementById('pts').innerText = state.pts;
+            document.getElementById('points-alert').style.display = state.pts > 0 ? 'block' : 'none';
+            
+            ['str','agi','int','vit'].forEach(s => document.getElementById(s).innerText = state[s]);
+
+            const list = document.getElementById('quest-list');
+            list.innerHTML = "";
+            state.quests.forEach(q => {
+                list.innerHTML += `
+                    <div class="quest-box">
+                        <div class="quest-info">
+                            <span style="font-size:1.2rem">${q.name}</span>
+                            <span class="quest-time">LIMITE: ${q.time}</span>
+                        </div>
+                        <button onclick="completeQuest(${q.id})" class="btn-ok" style="background:var(--blue); color:black; border:none; padding:10px; font-weight:bold;">CONCLUÍDO</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Checar tempo a cada 5 segundos
+        setInterval(checkTime, 5000);
+        render();
     </script>
 </body>
 </html>
