@@ -79,45 +79,60 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('monarch_v20')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
+    let state = JSON.parse(localStorage.getItem('monarch_v21')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
     let myChart;
     let ambientOscillator;
 
-    // --- SISTEMA DE ÁUDIO DARK MONARCH ---
+    // --- SISTEMA DE ÁUDIO "SYSTEM Monarch" (SINTÉTICO PURE) ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const gain = audioCtx.createGain();
-        const osc = audioCtx.createOscillator();
+        const mainGain = audioCtx.createGain();
+        mainGain.connect(audioCtx.destination);
         
         if (type === 'click') {
-            // O "VOOAMMM" (Deslocamento de Aura Profunda)
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.7);
+            // SOM ESTILO SOLO LEVELING (Aura + Metálico Curto)
+            // Camada 1: Aura (Zumbido Sawtooth filtrado)
+            const o1 = audioCtx.createOscillator(); const g1 = audioCtx.createGain(); const f1 = audioCtx.createBiquadFilter();
+            o1.type = 'sawtooth';
+            o1.frequency.setValueAtTime(160, audioCtx.currentTime);
+            o1.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.6); // Queda profunda
+            
+            f1.type = "lowpass";
+            f1.frequency.setValueAtTime(400, audioCtx.currentTime);
+            f1.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.6);
 
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = "lowpass";
-            filter.frequency.setValueAtTime(350, audioCtx.currentTime);
-            filter.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.7);
+            g1.gain.setValueAtTime(0, audioCtx.currentTime);
+            g1.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.1); 
+            g1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
 
-            gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.15); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+            o1.connect(f1); f1.connect(g1); g1.connect(mainGain);
+            o1.start(); o1.stop(audioCtx.currentTime + 0.6);
 
-            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.7);
+            // Camada 2: Impacto Metálico Curto (Som de lâmina digital)
+            const o2 = audioCtx.createOscillator(); const g2 = audioCtx.createGain();
+            o2.type = 'sine';
+            o2.frequency.setValueAtTime(880, audioCtx.currentTime); // Agudo metálico
+            o2.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.05);
+            
+            g2.gain.setValueAtTime(0.04, audioCtx.currentTime);
+            g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            o2.connect(g2); g2.connect(mainGain);
+            o2.start(); o2.stop(audioCtx.currentTime + 0.1);
+            
+            mainGain.gain.setValueAtTime(1, audioCtx.currentTime);
+
         } else if (type === 'check') {
             // Som Metálico Curto
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = 'sine'; o.frequency.setValueAtTime(700, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 0.1);
         } else if (type === 'levelUp') {
-            const notes = [220, 277, 329, 440];
+            const notes = [220, 277, 329, 440, 554];
             notes.forEach((f, i) => {
                 const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
                 o.type = 'sine'; o.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.15));
@@ -132,19 +147,30 @@
     function startAmbient() {
         if (ambientOscillator) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [43.65, 41.20, 38.89, 34.65]; // Tons Sub-graves Opressores
+        
+        // AMBIENTE DARK DUNGEON (Dissonante e Imprevisível)
+        const notes = [41.20, 46.25, 43.65, 38.89]; // Frequências Sombrias Sintéticas
         let cur = 0;
+        
         function play() {
             const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); const f = audioCtx.createBiquadFilter();
-            o.type = 'triangle'; o.frequency.setValueAtTime(notes[cur], audioCtx.currentTime);
-            f.type = "lowpass"; f.frequency.value = 100;
+            o.type = 'sawtooth'; // Onda 'sawtooth' para distorção sintética
+            o.frequency.setValueAtTime(notes[cur], audioCtx.currentTime);
+            
+            f.type = "lowpass"; 
+            f.frequency.value = 120; // Corta agudos, deixa a "presença" opressora
+
             g.gain.setValueAtTime(0, audioCtx.currentTime);
-            g.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 2);
-            g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 5);
+            g.gain.linearRampToValueAtTime(0.03, audioCtx.currentTime + 2); // Entrada lenta
+            g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 5.5); // Saída lenta
+
             o.connect(f); f.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 5);
+            o.start(); o.stop(audioCtx.currentTime + 5.5);
+            
             cur = (cur + 1) % notes.length;
-            ambientOscillator = setTimeout(play, 5500);
+            
+            // Loop com silêncio longo e imprevisível para clima dark
+            ambientOscillator = setTimeout(play, 6500); 
         }
         play();
     }
@@ -161,7 +187,7 @@
         return { ...info, reps, km };
     }
 
-    function save() { localStorage.setItem('monarch_v20', JSON.stringify(state)); render(); }
+    function save() { localStorage.setItem('monarch_v21', JSON.stringify(state)); render(); }
 
     function render() {
         const info = getRankInfo(state.lvl);
