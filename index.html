@@ -82,8 +82,15 @@
 
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>CUSTOM QUESTS</h1></div>
-        <div id="custom-list">
+        <div class="quest-card">
+            <input type="text" id="q-name" placeholder="Nome da missão...">
+            <div style="display:flex; gap:5px;">
+                <select id="q-focus"><option value="str">FORÇA</option><option value="agi">AGILIDADE</option><option value="vit">VITALIDADE</option><option value="int">INTELIGÊNCIA</option></select>
+                <input type="number" id="q-time" placeholder="Minutos">
             </div>
+            <button class="main-btn" onclick="addCustom()">INICIAR TREINO ESPECIAL</button>
+        </div>
+        <div id="custom-list"></div>
     </div>
 </div>
 
