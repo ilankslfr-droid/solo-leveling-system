@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: Monarch HUD v18.0</title>
+    <title>Solo Leveling: Monarch HUD</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,8 +11,8 @@
         body { background: radial-gradient(circle at center, #0a192f 0%, var(--bg-dark) 100%); color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 110px; overflow-x: hidden; }
         .hud-container { max-width: 420px; margin: 15px auto; padding: 20px; background: rgba(5, 15, 25, 0.96); border: 1px solid var(--neon-blue); box-shadow: 0 0 25px rgba(0, 212, 255, 0.15); backdrop-filter: blur(15px); }
         .screen { display: none; }
-        .active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon-blue); border-bottom: 1px solid var(--neon-blue); padding-bottom: 5px; margin-bottom: 15px; }
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); font-size: 1rem; }
         .stat-value { color: var(--neon-blue); font-family: 'Orbitron'; font-weight: bold; }
@@ -46,14 +46,10 @@
         <div class="stat-row"><span>AGILIDADE (AGI)</span> <span id="agi" class="stat-value">10</span></div>
         <div class="stat-row"><span>VITALIDADE (VIT)</span> <span id="vit" class="stat-value">10</span></div>
         <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span id="int" class="stat-value">10</span></div>
-        
-        <div class="radar-box">
-            <canvas id="radarChart"></canvas>
-        </div>
-
+        <div class="radar-box"><canvas id="radarChart"></canvas></div>
         <div class="system-log">
             <div class="log-title">SYSTEM NOTIFICATIONS</div>
-            <div class="log-text"><span>[STATUS: Biometria Estável.]</span><span>[AVISO: O treino escala com o seu poder.]</span></div>
+            <div class="log-text"><span>[STATUS: Biometria Estável.]</span><span>[AVISO: Presença de mana detectada.]</span></div>
         </div>
     </div>
 
@@ -83,109 +79,100 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('monarch_v18')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
+    let state = JSON.parse(localStorage.getItem('monarch_v20')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
     let myChart;
-    let ambientOscillator; // Para o som ambiente
+    let ambientOscillator;
 
-    // --- AUDIO SYSTEM (ELDEN MONARCH STYLE) ---
+    // --- SISTEMA DE ÁUDIO DARK MONARCH ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
+
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-
+        const osc = audioCtx.createOscillator();
+        
         if (type === 'click') {
-            // SOM "VOOAMM" (Estilo Deslocamento de Sabre de Luz)
-            osc.type = 'sine'; // Onda senoidal pura para suavidade
-            
-            // Começa agudo e desce profundo (O "vooamm")
-            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.3); // Queda profunda
-            
-            // Envelope de volume com "cauda" suave
+            // O "VOOAMMM" (Deslocamento de Aura Profunda)
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.7);
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(350, audioCtx.currentTime);
+            filter.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.7);
+
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.05); // Ataque Aero
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); // Decaimento
-            
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.15); 
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+
+            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.7);
         } else if (type === 'check') {
-            // BIP DE CONFIRMAÇÃO (RESONANTE)
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            // Som Metálico Curto
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         } else if (type === 'levelUp') {
-            // ACORDE ASCENDENTE ÉPICO
-            const notes = [440, 554, 659, 880];
+            const notes = [220, 277, 329, 440];
             notes.forEach((f, i) => {
                 const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-                o.type = 'sine'; o.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.1));
+                o.type = 'sine'; o.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.15));
                 g.connect(audioCtx.destination); o.connect(g);
-                g.gain.setValueAtTime(0.05, audioCtx.currentTime + (i * 0.1));
-                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.8);
-                o.start(audioCtx.currentTime + (i * 0.1)); o.stop(audioCtx.currentTime + (i * 0.1) + 0.8);
+                g.gain.setValueAtTime(0.04, audioCtx.currentTime + (i * 0.15));
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.15) + 0.8);
+                o.start(audioCtx.currentTime + (i * 0.15)); o.stop(audioCtx.currentTime + (i * 0.15) + 0.8);
             });
         }
     }
 
-    // --- SOM AMBIENTE (Melodia Sintética Limgrave) ---
     function startAmbient() {
-        if (ambientOscillator) return; // Já está tocando
+        if (ambientOscillator) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
-
-        // Melodia simples e melancólica estilo Elden Ring
-        const notes = [220, 261, 329, 293, 220, 261, 392, 349]; // Dó, Ré, Mi, Ré...
-        let currentNote = 0;
-
-        function playNextNote() {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(notes[currentNote], audioCtx.currentTime);
-            
-            // Volume ultra baixo para não atrapalhar
-            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
-            
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
-            
-            currentNote = (currentNote + 1) % notes.length;
-            // Loop melódico lento
-            ambientOscillator = setTimeout(playNextNote, 2000); 
+        const notes = [43.65, 41.20, 38.89, 34.65]; // Tons Sub-graves Opressores
+        let cur = 0;
+        function play() {
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); const f = audioCtx.createBiquadFilter();
+            o.type = 'triangle'; o.frequency.setValueAtTime(notes[cur], audioCtx.currentTime);
+            f.type = "lowpass"; f.frequency.value = 100;
+            g.gain.setValueAtTime(0, audioCtx.currentTime);
+            g.gain.linearRampToValueAtTime(0.04, audioCtx.currentTime + 2);
+            g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 5);
+            o.connect(f); f.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + 5);
+            cur = (cur + 1) % notes.length;
+            ambientOscillator = setTimeout(play, 5500);
         }
-
-        playNextNote();
+        play();
     }
 
-    // --- LOGIC ---
+    // --- LÓGICA DO HUD ---
     function getRankInfo(lvl) {
         let reps = 10 + (lvl * 2); let km = (1 + (lvl * 0.1)).toFixed(1);
-        let info = { rank: "E", flex: "Flexões", abd: "Abdominais", agach: "Agachamentos", corr: "Corrida (Trote)", color: "#00d4ff" };
+        let info = { rank: "E", flex: "Flexões", abd: "Abdominais", agach: "Agachamentos", corr: "Corrida", color: "#00d4ff" };
         if(lvl >= 5) info.rank = "D";
-        if(lvl >= 15) { info.rank = "C"; info.flex = "Flexões Arqueiro"; info.abd = "Abdominal Infra"; info.agach = "Agachamento Sumô"; }
-        if(lvl >= 35) { info.rank = "B"; info.flex = "Flexões Diamante"; info.abd = "Canivete (V-Ups)"; info.agach = "Agachamento Búlgaro"; info.corr = "Corrida Moderada"; }
-        if(lvl >= 60) { info.rank = "A"; info.flex = "Flexões Explosivas"; info.abd = "Abdominal Bicicleta"; info.agach = "Pistol Squat (Apoio)"; info.corr = "Corrida Veloz"; }
-        if(lvl >= 80) { info.rank = "S"; info.flex = "Burpees Explosivos"; info.abd = "L-Sit Hold (seg)"; info.agach = "Pistol Squat"; info.corr = "HIIT Sprint"; info.color = "#ff0055"; }
-        if(lvl >= 100) { info.rank = "NACIONAL"; info.flex = "Handstand Pushups"; info.abd = "Dragon Flag"; info.agach = "Pistol Squat Salto"; info.corr = "Resistência"; info.color = "#ffaa00"; }
+        if(lvl >= 15) { info.rank = "C"; info.flex = "Flexões Arqueiro"; info.abd = "Abdominal Infra"; }
+        if(lvl >= 35) { info.rank = "B"; info.flex = "Flexões Diamante"; info.corr = "Corrida Moderada"; }
+        if(lvl >= 80) { info.rank = "S"; info.color = "#ff0055"; }
+        if(lvl >= 100) { info.rank = "NACIONAL"; info.color = "#ffaa00"; }
         return { ...info, reps, km };
     }
 
-    function save() { localStorage.setItem('monarch_v18', JSON.stringify(state)); render(); }
+    function save() { localStorage.setItem('monarch_v20', JSON.stringify(state)); render(); }
 
     function render() {
         const info = getRankInfo(state.lvl);
-        const rEl = document.getElementById('rank-name');
-        rEl.innerText = info.rank; rEl.style.color = info.color;
+        document.getElementById('rank-name').innerText = info.rank;
+        document.getElementById('rank-name').style.color = info.color;
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('xp-txt').innerText = state.xp + "/100";
         document.getElementById('xp-fill').style.width = state.xp + "%";
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
 
-        const tasks = [`${info.flex}: ${info.reps}`, `${info.abd}: ${info.reps}`, `${info.agach}: ${info.reps}`, `${info.corr}: ${info.km}km`];
+        const tasks = [`${info.flex}: ${info.reps}`, `${info.abd}: ${info.reps}`, `Agachamentos: ${info.reps}`, `Corrida: ${info.km}km`];
         document.getElementById('daily-list').innerHTML = tasks.map((t, i) => `<div style="padding:15px 0; border-bottom:1px solid #111"><input type="checkbox" onchange="toggleD(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}> ${t}</div>`).join('');
         document.getElementById('btn-daily').disabled = !state.dailyChecks.every(c=>c) || state.dailyDone;
 
@@ -193,25 +180,13 @@
             const ready = q.endTime <= Date.now();
             return `<div class="quest-card"><div style="display:flex; justify-content:space-between"><div><small>+1 ${q.focus.toUpperCase()}</small><br><b>${q.name}</b><br><span id="t-${q.id}">${ready?'PRONTO':'--:--'}</span></div><button onclick="compC(${q.id})" ${!ready?'disabled':''} style="background:${ready?'var(--neon-blue)':'#222'}; color:black; border:none; padding:10px; font-family:'Orbitron'">${ready?'DONE':'LOCKED'}</button></div></div>`;
         }).join('');
-        
         updateRadar();
     }
 
     function updateRadar() {
-        const ctx = document.getElementById('radarChart');
-        if(!ctx) return;
+        const ctx = document.getElementById('radarChart'); if(!ctx) return;
         if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, { 
-            type:'radar', 
-            data:{ 
-                labels:['STR','AGI','VIT','INT'], 
-                datasets:[{ data:[state.str, state.agi, state.vit, state.int], backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:2 }]
-            }, 
-            options:{ 
-                scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron'}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }}, 
-                plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false 
-            }
-        });
+        myChart = new Chart(ctx, { type:'radar', data:{ labels:['STR','AGI','VIT','INT'], datasets:[{ data:[state.str, state.agi, state.vit, state.int], backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:2 }]}, options:{ scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron'}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }}, plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false }});
     }
 
     function toggleD(i) { state.dailyChecks[i] = !state.dailyChecks[i]; if(state.dailyChecks[i]) playSound('check'); save(); }
@@ -219,10 +194,9 @@
     function addCustom() { const n = document.getElementById('q-name').value; const t = parseInt(document.getElementById('q-time').value) || 0; if(n) { playSound('click'); state.quests.push({id: Date.now(), name: n, focus: document.getElementById('q-focus').value, endTime: Date.now() + (t*60000)}); document.getElementById('q-name').value = ""; save(); } }
     function compC(id) { playSound('levelUp'); const q = state.quests.find(x => x.id === id); state[q.focus]++; state.xp += 15; state.quests = state.quests.filter(x => x.id !== id); checkLevelUp(); save(); }
     function checkLevelUp() { while(state.xp >= 100){ state.xp -= 100; state.lvl++; } }
-    
+
     function showScreen(id) { 
-        playSound('click'); // Inicia o som de "vooamm"
-        startAmbient(); // Inicia a melodia ao primeiro clique
+        playSound('click'); startAmbient();
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); 
         document.getElementById(id+'-screen').classList.add('active'); 
@@ -241,7 +215,6 @@
         });
     }, 1000);
 
-    // Inicialização
     window.onload = () => { render(); };
 </script>
 </body>
