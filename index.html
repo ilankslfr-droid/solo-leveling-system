@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solo Leveling: System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --system-blue: #00d4ff;
+            --system-dark: #050505;
+            --system-panel: rgba(0, 212, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--system-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .system-container {
+            width: 90%;
+            max-width: 400px;
+            border: 2px solid var(--system-blue);
+            padding: 20px;
+            background: linear-gradient(145deg, #0a0a0a, #1a1a1a);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            border-radius: 5px;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--system-blue);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            border-bottom: 1px solid var(--system-blue);
+            padding-bottom: 10px;
+        }
+
+        .status-line {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .label { color: #888; text-transform: uppercase; }
+        .value { color: var(--system-blue); font-weight: bold; }
+
+        .xp-container {
+            background: #222;
+            height: 10px;
+            width: 100%;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        #xp-bar {
+            background: var(--system-blue);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+            box-shadow: 0 0 10px var(--system-blue);
+        }
+
+        .quest-list {
+            margin-top: 20px;
+            border-top: 1px solid #333;
+            padding-top: 15px;
+        }
+
+        .quest-item {
+            background: var(--system-panel);
+            margin: 10px 0;
+            padding: 15px;
+            border-left: 3px solid var(--system-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--system-blue);
+            color: var(--system-blue);
+            padding: 8px 15px;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--system-blue);
+            color: black;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid gold;
+            padding: 20px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="system-container">
+        <h1>Janela de Status</h1>
+        
+        <div class="status-line">
+            <span class="label">Nível</span>
+            <span class="value" id="lvl-display">1</span>
+        </div>
+
+        <div class="label">Experiência (XP)</div>
+        <div class="xp-container">
+            <div id="xp-bar"></div>
+        </div>
+        <div style="text-align: right; font-size: 0.8rem;" id="xp-text">0 / 100</div>
+
+        <div class="quest-list">
+            <div class="label" style="margin-bottom: 10px;">Missões Diárias</div>
+            
+            <div class="quest-item">
+                <span>Treino Físico</span>
+                <button onclick="addXP(25, 'Missão Concluída!')">OK</button>
+            </div>
+            
+            <div class="quest-item">
+                <span>Estudo/Foco</span>
+                <button onclick="addXP(25, 'Conhecimento Ampliado!')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="level-up-popup" class="popup">
+        <h2 style="color: gold;">LEVEL UP!</h2>
+        <p>Suas habilidades foram aprimoradas.</p>
+        <button onclick="closePopup()">Confirmar</button>
+    </div>
+
+    <script>
+        let xp = localStorage.getItem('xp') ? parseInt(localStorage.getItem('xp')) : 0;
+        let lvl = localStorage.getItem('lvl') ? parseInt(localStorage.getItem('lvl')) : 1;
+
+        function updateDisplay() {
+            document.getElementById('lvl-display').innerText = lvl;
+            document.getElementById('xp-bar').style.width = xp + "%";
+            document.getElementById('xp-text').innerText = xp + " / 100";
+            
+            localStorage.setItem('xp', xp);
+            localStorage.setItem('lvl', lvl);
+        }
+
+        function addXP(amount, msg) {
+            xp += amount;
+            if (xp >= 100) {
+                xp = 0;
+                lvl++;
+                document.getElementById('level-up-popup').style.display = 'block';
+            }
+            updateDisplay();
+        }
+
+        function closePopup() {
+            document.getElementById('level-up-popup').style.display = 'none';
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
