@@ -63,13 +63,36 @@
         <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span id="int" class="stat-val">10</span></div>
         
         <div class="radar-box"><canvas id="radarChart"></canvas></div>
+<div class="radar-box"><canvas id="radarChart"></canvas></div>
+    </div> <div id="system-notification" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(0,0,0,0.95); border:2px solid var(--neon); padding:20px; z-index:5000; text-align:center; min-width:280px; box-shadow: 0 0 30px var(--neon); backdrop-filter: blur(5px); border-radius: 2px;">
+        <h2 style="font-family:'Orbitron'; color:var(--neon); margin:0; font-size:1.2rem; letter-spacing: 2px;">NOTIFICAÇÃO</h2>
+        <p id="notif-message" style="font-family:'Orbitron'; margin:15px 0; color:white; font-size: 0.9rem;"></p>
+        <button onclick="closeNotif()" class="main-btn" style="margin:0; padding:10px; width: 100%;">OK</button>
     </div>
 
-    <div id="daily-screen" class="screen">
-        <div class="hud-header"><h1>DAILY QUEST</h1></div>
-        <div id="daily-list"></div>
-        <button id="btn-collect" class="main-btn" disabled onclick="collectDailyRewards()">COLETAR RECOMPENSA</button>
-    </div>
+</div> ```
+
+---
+
+### Por que esse é o jeito certo?
+
+1.  **Sem Duplicatas:** Removi aquela segunda caixa de notificação que estava sobrando.
+2.  **Hierarquia:** Percebe que o `system-notification` está **depois** que a `status-screen` fecha (`</div>`), mas **antes** do `hud-container` fechar? Isso faz com que ela flutue por cima de tudo.
+3.  **Limpeza:** Tirei os comentários em texto e os símbolos que estavam "sujando" o seu arquivo.
+
+### Não esqueça do JavaScript!
+Para essa caixa aparecer e sumir, você precisa ter essas duas funções dentro das suas tags `<script>`:
+
+```javascript
+function showNotif(msg) {
+    document.getElementById('notif-message').innerText = msg;
+    document.getElementById('system-notification').style.display = 'block';
+    if(sfx) { sfx.currentTime = 0; sfx.play(); } // Toca o som de alerta
+}
+
+function closeNotif() {
+    document.getElementById('system-notification').style.display = 'none';
+}
 
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>CUSTOM TRAINING</h1></div>
