@@ -13,23 +13,29 @@
         .screen { display: none; }
         .active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon-blue); border-bottom: 1px solid var(--neon-blue); padding-bottom: 5px; margin-bottom: 15px; }
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); font-size: 1rem; }
         .stat-value { color: var(--neon-blue); font-family: 'Orbitron'; font-weight: bold; }
+        
         .xp-container { background:#111; height:6px; width:100%; margin:10px 0; border: 1px solid #222; }
         .xp-bar { background:var(--neon-blue); height:100%; width:0%; transition: 1s; box-shadow: 0 0 10px var(--neon-blue); }
+        
         .radar-box { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 212, 255, 0.1); padding: 15px; height: 220px; margin-top: 20px; display: flex; justify-content: center; align-items: center; }
         .system-log { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 212, 255, 0.1); padding: 12px; height: 100px; overflow-y: hidden; margin-top: 15px; }
         .log-title { font-family: 'Orbitron'; font-size: 0.65rem; color: var(--neon-blue); margin-bottom: 8px; opacity: 0.8; }
         .log-text { font-size: 0.75rem; color: #aaa; line-height: 1.6; font-style: italic; }
         .log-text span { display: block; margin-bottom: 4px; border-left: 2px solid var(--neon-blue); padding-left: 8px; }
+
         .quest-card { background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.3); padding: 15px; margin-bottom: 12px; }
-        .main-btn { width: 100%; background: #000; border: 1px solid var(--neon-blue); color: white; padding: 12px; margin-top: 10px; font-family: 'Orbitron'; cursor: pointer; }
-        .main-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; }
-        input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 10px; margin-bottom: 8px; box-sizing: border-box; }
+        .main-btn { width: 100%; background: #000; border: 1px solid var(--neon-blue); color: white; padding: 12px; margin-top: 10px; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; }
+        .main-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; opacity: 0.5; }
+        .main-btn:hover:not(:disabled) { background: var(--neon-blue); color: black; }
+
+        input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 10px; margin-bottom: 8px; box-sizing: border-box; font-family: inherit; }
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon-blue); z-index: 100; }
         nav button { flex: 1; padding: 18px; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.7rem; }
-        nav button.active-nav { color: var(--neon-blue); }
+        nav button.active-nav { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
         .timer-display { font-family: 'Orbitron'; color: #ff4444; font-size: 0.8rem; }
     </style>
 </head>
@@ -39,26 +45,36 @@
     <div id="status-screen" class="screen active">
         <div class="hud-header"><h1>PLAYER STATUS</h1></div>
         <h2 style="font-family:'Orbitron'; margin:0; font-size: 1.8rem;">HUNTER</h2>
-        <div style="color:var(--neon-blue); font-size: 0.9rem; margin-bottom: 10px;">RANK E | CLASSE: HUMANO</div>
+        <div style="color:var(--neon-blue); font-size: 0.9rem; margin-bottom: 10px;">RANK <span id="rank-name">E</span> | CLASSE: HUMANO</div>
+        
         <div style="font-size: 0.85rem; display: flex; justify-content: space-between;">
             <span>LEVEL: <span id="lvl">1</span></span>
             <span>XP: <span id="xp-txt">0/100</span></span>
         </div>
-        <div class="xp-container"><div class="xp-bar" id="xp-fill"></div></div>
-        <div class="stat-row"><span>FORÇA (STR)</span> <span class="stat-value" id="str">10</span></div>
-        <div class="stat-row"><span>AGILIDADE (AGI)</span> <span class="stat-value" id="agi">10</span></div>
-        <div class="stat-row"><span>VITALIDADE (VIT)</span> <span class="stat-value" id="vit">10</span></div>
-        <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span class="stat-value" id="int">10</span></div>
+        <div class="xp-container"><div id="xp-fill" class="xp-bar"></div></div>
+        
+        <div class="stat-row"><span>FORÇA (STR)</span> <span id="str" class="stat-value">10</span></div>
+        <div class="stat-row"><span>AGILIDADE (AGI)</span> <span id="agi" class="stat-value">10</span></div>
+        <div class="stat-row"><span>VITALIDADE (VIT)</span> <span id="vit" class="stat-value">10</span></div>
+        <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span id="int" class="stat-value">10</span></div>
+
         <div class="radar-box"><canvas id="radarChart"></canvas></div>
+        
         <div class="system-log">
             <div class="log-title">SYSTEM NOTIFICATIONS</div>
-            <div class="log-text"><span>[AVISO: Monitoramento ativo.]</span><span>[DICA: Complete as quests para subir de Rank.]</span></div>
+            <div class="log-text">
+                <span>[AVISO: Monitoramento biométrico ativo.]</span>
+                <span>[DICA: Complete o treino diário para evitar a Zona de Punição.]</span>
+            </div>
         </div>
     </div>
 
     <div id="daily-screen" class="screen">
-        <div class="hud-header"><h1>DAILY QUEST</h1></div>
-        <div class="quest-card"><div id="daily-list"></div><button id="btn-daily" class="main-btn" disabled onclick="completeDaily()">CONCLUIR TREINO</button></div>
+        <div class="hud-header"><h1>DAILY QUEST: PREPARAR PARA O DESPERTAR</h1></div>
+        <div class="quest-card">
+            <div id="daily-list"></div>
+            <button id="btn-daily" class="main-btn" disabled onclick="completeDaily()">COLETAR RECOMPENSA</button>
+        </div>
     </div>
 
     <div id="custom-screen" class="screen">
@@ -67,9 +83,9 @@
             <input type="text" id="q-name" placeholder="Nome da missão...">
             <div style="display:flex; gap:5px;">
                 <select id="q-focus"><option value="str">FORÇA</option><option value="agi">AGILIDADE</option><option value="vit">VITALIDADE</option><option value="int">INTELIGÊNCIA</option></select>
-                <input type="number" id="q-time" placeholder="Min">
+                <input type="number" id="q-time" placeholder="Minutos">
             </div>
-            <button class="main-btn" onclick="addCustom()">CRIAR MISSÃO</button>
+            <button class="main-btn" onclick="addCustom()">INICIAR TREINO ESPECIAL</button>
         </div>
         <div id="custom-list"></div>
     </div>
@@ -82,26 +98,65 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('solo_final')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, quests: [], dailyChecks: [false,false,false,false], dailyDone: false };
+    let state = JSON.parse(localStorage.getItem('solo_v14')) || { 
+        lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, 
+        quests: [], dailyChecks: [false,false,false,false], dailyDone: false 
+    };
     let myChart;
 
-    function save() { localStorage.setItem('solo_final', JSON.stringify(state)); render(); }
+    function getRankInfo(lvl) {
+        if(lvl >= 50) return {r:"S", reps: 100, km: 10};
+        if(lvl >= 35) return {r:"A", reps: 80, km: 8};
+        if(lvl >= 20) return {r:"B", reps: 50, km: 5};
+        if(lvl >= 10) return {r:"C", reps: 30, km: 3};
+        if(lvl >= 5)  return {r:"D", reps: 20, km: 2};
+        return {r:"E", reps: 10, km: 1};
+    }
+
+    function save() { localStorage.setItem('solo_v14', JSON.stringify(state)); render(); }
 
     function render() {
+        const info = getRankInfo(state.lvl);
+        document.getElementById('rank-name').innerText = info.r;
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('xp-txt').innerText = state.xp + "/100";
         document.getElementById('xp-fill').style.width = state.xp + "%";
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
 
+        // Daily Quest Dinâmica
         const dList = document.getElementById('daily-list');
-        const ex = ["Flexões", "Abdominais", "Agachamentos", "Corrida"];
-        dList.innerHTML = ex.map((e, i) => `<div style="padding:10px 0; border-bottom:1px solid #111"><input type="checkbox" onchange="toggleD(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}> ${e}</div>`).join('');
+        const tasks = [
+            `${info.reps} Flexões`, 
+            `${info.reps} Abdominais`, 
+            `${info.reps} Agachamentos`, 
+            `${info.km}km de Corrida`
+        ];
+        dList.innerHTML = tasks.map((t, i) => `
+            <div style="padding:12px 0; border-bottom:1px solid #111; display:flex; align-items:center; gap:10px;">
+                <input type="checkbox" onchange="toggleD(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}>
+                <span style="${state.dailyChecks[i]?'text-decoration:line-through; opacity:0.5':''}">${t}</span>
+            </div>
+        `).join('');
         document.getElementById('btn-daily').disabled = !state.dailyChecks.every(c=>c) || state.dailyDone;
 
+        // Custom Quests com Timers
         const cList = document.getElementById('custom-list');
         cList.innerHTML = state.quests.map(q => {
             const ready = q.endTime <= Date.now();
-            return `<div class="quest-card"><div style="display:flex; justify-content:space-between"><div><b>${q.name}</b><br><span class="timer-display" id="t-${q.id}">${ready?'PRONTO':'--:--'}</span></div><button onclick="compC(${q.id})" ${!ready?'disabled':''} style="background:${ready?'var(--neon-blue)':'#222'}; color:black; border:none; padding:10px; font-family:'Orbitron'">${ready?'DONE':'LOCKED'}</button></div></div>`;
+            return `
+            <div class="quest-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:0.6rem; color:var(--neon-blue)">FOCO: ${q.focus.toUpperCase()}</div>
+                        <b>${q.name}</b><br>
+                        <span class="timer-display" id="t-${q.id}">${ready?'OBJETIVO CONCLUÍDO':'--:--'}</span>
+                    </div>
+                    <button onclick="compC(${q.id})" ${!ready?'disabled':''} 
+                        style="background:${ready?'var(--neon-blue)':'#222'}; color:black; border:none; padding:10px; font-family:'Orbitron'; font-weight:bold;">
+                        ${ready?'FINALIZAR':'BLOQUEADO'}
+                    </button>
+                </div>
+            </div>`;
         }).join('');
         updateRadar();
     }
@@ -109,7 +164,24 @@
     function updateRadar() {
         const ctx = document.getElementById('radarChart').getContext('2d');
         if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, { type:'radar', data:{ labels:['STR','AGI','VIT','INT'], datasets:[{ data:[state.str, state.agi, state.vit, state.int], backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:2 }]}, options:{ scales:{ r:{ grid:{color:'rgba(255,255,255,0.1)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron'}}, ticks:{display:false}, suggestedMin:0, suggestedMax:30 }}, plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false }});
+        myChart = new Chart(ctx, {
+            type:'radar',
+            data:{
+                labels:['STR','AGI','VIT','INT'],
+                datasets:[{
+                    data:[state.str, state.agi, state.vit, state.int],
+                    backgroundColor:'rgba(0,212,255,0.2)',
+                    borderColor:'#00d4ff',
+                    borderWidth:2,
+                    pointRadius: 2
+                }]
+            },
+            options:{
+                scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron', size:12}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }},
+                plugins:{legend:{display:false}},
+                responsive:true, maintainAspectRatio:false
+            }
+        });
     }
 
     setInterval(() => {
@@ -124,8 +196,13 @@
     }, 1000);
 
     function addCustom() {
-        const n = document.getElementById('q-name').value; const t = parseInt(document.getElementById('q-time').value) || 0;
-        if(n) { state.quests.push({id: Date.now(), name: n, focus: document.getElementById('q-focus').value, endTime: Date.now() + (t*60000)}); save(); }
+        const n = document.getElementById('q-name').value; 
+        const t = parseInt(document.getElementById('q-time').value) || 0;
+        if(n) { 
+            state.quests.push({id: Date.now(), name: n, focus: document.getElementById('q-focus').value, endTime: Date.now() + (t*60000)}); 
+            document.getElementById('q-name').value = "";
+            save(); 
+        }
     }
 
     function compC(id) {
@@ -135,9 +212,28 @@
     }
 
     function toggleD(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    function completeDaily() { state.xp += 40; state.dailyDone = true; checkLvl(); save(); }
-    function checkLvl() { while(state.xp >= 100){ state.xp -= 100; state.lvl++; } }
-    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById(id+'-screen').classList.add('active'); document.getElementById('nav-'+id).classList.add('active-nav'); if(id==='status') render(); }
+    
+    function completeDaily() { 
+        state.xp += 40; 
+        state.dailyDone = true; 
+        checkLvl(); 
+        save(); 
+    }
+
+    function checkLvl() { 
+        while(state.xp >= 100){ 
+            state.xp -= 100; 
+            state.lvl++; 
+        } 
+    }
+
+    function showScreen(id) { 
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); 
+        document.getElementById(id+'-screen').classList.add('active'); 
+        document.getElementById('nav-'+id).classList.add('active-nav'); 
+        if(id==='status') render(); 
+    }
 
     render();
 </script>
