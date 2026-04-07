@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: Monarch HUD</title>
+    <title>Solo Leveling: Monarch HUD v22.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,8 +11,8 @@
         body { background: radial-gradient(circle at center, #0a192f 0%, var(--bg-dark) 100%); color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 110px; overflow-x: hidden; }
         .hud-container { max-width: 420px; margin: 15px auto; padding: 20px; background: rgba(5, 15, 25, 0.96); border: 1px solid var(--neon-blue); box-shadow: 0 0 25px rgba(0, 212, 255, 0.15); backdrop-filter: blur(15px); }
         .screen { display: none; }
-        .active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon-blue); border-bottom: 1px solid var(--neon-blue); padding-bottom: 5px; margin-bottom: 15px; }
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); font-size: 1rem; }
         .stat-value { color: var(--neon-blue); font-family: 'Orbitron'; font-weight: bold; }
@@ -20,14 +20,8 @@
         .xp-bar { background:var(--neon-blue); height:100%; width:0%; transition: 1s; box-shadow: 0 0 10px var(--neon-blue); }
         .radar-box { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(0, 212, 255, 0.1); padding: 15px; height: 220px; margin-top: 20px; display: flex; justify-content: center; align-items: center; position: relative; }
         canvas { max-width: 100%; max-height: 100%; }
-        .system-log { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 212, 255, 0.1); padding: 12px; height: 100px; overflow-y: hidden; margin-top: 15px; }
-        .log-title { font-family: 'Orbitron'; font-size: 0.65rem; color: var(--neon-blue); margin-bottom: 8px; opacity: 0.8; }
-        .log-text { font-size: 0.75rem; color: #aaa; line-height: 1.6; font-style: italic; }
-        .log-text span { display: block; margin-bottom: 4px; border-left: 2px solid var(--neon-blue); padding-left: 8px; }
         .quest-card { background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.3); padding: 15px; margin-bottom: 12px; }
         .main-btn { width: 100%; background: #000; border: 1px solid var(--neon-blue); color: white; padding: 12px; margin-top: 10px; font-family: 'Orbitron'; cursor: pointer; transition: 0.3s; }
-        .main-btn:disabled { border-color: #444; color: #444; cursor: not-allowed; opacity: 0.5; }
-        input, select { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 10px; margin-bottom: 8px; box-sizing: border-box; font-family: inherit; }
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon-blue); z-index: 100; }
         nav button { flex: 1; padding: 18px; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; }
         nav button.active-nav { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
@@ -42,15 +36,13 @@
         <div style="font-size: 0.9rem; margin-bottom: 10px;">RANK: <span id="rank-name" style="font-weight:bold;">E</span></div>
         <div style="font-size: 0.85rem; display: flex; justify-content: space-between;"><span>LEVEL: <span id="lvl">1</span></span><span>XP: <span id="xp-txt">0/100</span></span></div>
         <div class="xp-container"><div id="xp-fill" class="xp-bar"></div></div>
-        <div class="stat-row"><span>FORÇA (STR)</span> <span id="str" class="stat-value">10</span></div>
-        <div class="stat-row"><span>AGILIDADE (AGI)</span> <span id="agi" class="stat-value">10</span></div>
-        <div class="stat-row"><span>VITALIDADE (VIT)</span> <span id="vit" class="stat-value">10</span></div>
-        <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span id="int" class="stat-value">10</span></div>
-        <div class="radar-box"><canvas id="radarChart"></canvas></div>
-        <div class="system-log">
-            <div class="log-title">SYSTEM NOTIFICATIONS</div>
-            <div class="log-text"><span>[STATUS: Biometria Estável.]</span><span>[AVISO: Presença de mana detectada.]</span></div>
+        <div id="stats-area">
+            <div class="stat-row"><span>FORÇA (STR)</span> <span id="str" class="stat-value">10</span></div>
+            <div class="stat-row"><span>AGILIDADE (AGI)</span> <span id="agi" class="stat-value">10</span></div>
+            <div class="stat-row"><span>VITALIDADE (VIT)</span> <span id="vit" class="stat-value">10</span></div>
+            <div class="stat-row"><span>INTELIGÊNCIA (INT)</span> <span id="int" class="stat-value">10</span></div>
         </div>
+        <div class="radar-box"><canvas id="radarChart"></canvas></div>
     </div>
 
     <div id="daily-screen" class="screen">
@@ -61,11 +53,7 @@
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>CUSTOM QUESTS</h1></div>
         <div class="quest-card">
-            <input type="text" id="q-name" placeholder="Nome da missão...">
-            <div style="display:flex; gap:5px;">
-                <select id="q-focus"><option value="str">FORÇA</option><option value="agi">AGILIDADE</option><option value="vit">VITALIDADE</option><option value="int">INTELIGÊNCIA</option></select>
-                <input type="number" id="q-time" placeholder="Min">
-            </div>
+            <input type="text" id="q-name" placeholder="Nome da missão..." style="width:100%; background:#000; border:1px solid #333; color:white; padding:10px; margin-bottom:10px;">
             <button class="main-btn" onclick="addCustom()">INICIAR TREINO</button>
         </div>
         <div id="custom-list"></div>
@@ -79,167 +67,113 @@
 </nav>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('monarch_v21')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
+    let state = JSON.parse(localStorage.getItem('monarch_v22')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
     let myChart;
-    let ambientOscillator;
+    let ambientActive = false;
 
-    // --- SISTEMA DE ÁUDIO "SYSTEM Monarch" (SINTÉTICO PURE) ---
+    // --- AUDIO SYSTEM: FIDELIDADE AO ANIME ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const mainGain = audioCtx.createGain();
-        mainGain.connect(audioCtx.destination);
         
         if (type === 'click') {
-            // SOM ESTILO SOLO LEVELING (Aura + Metálico Curto)
-            // Camada 1: Aura (Zumbido Sawtooth filtrado)
-            const o1 = audioCtx.createOscillator(); const g1 = audioCtx.createGain(); const f1 = audioCtx.createBiquadFilter();
-            o1.type = 'sawtooth';
-            o1.frequency.setValueAtTime(160, audioCtx.currentTime);
-            o1.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.6); // Queda profunda
-            
-            f1.type = "lowpass";
-            f1.frequency.setValueAtTime(400, audioCtx.currentTime);
-            f1.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.6);
+            // "SHING" DIGITAL (O som de abrir menu do anime)
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
 
-            g1.gain.setValueAtTime(0, audioCtx.currentTime);
-            g1.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.1); 
-            g1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+            osc.type = 'sawtooth'; // Textura ríspida
+            osc.frequency.setValueAtTime(2000, audioCtx.currentTime); // Começa bem agudo
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.15); // Cai rápido
 
-            o1.connect(f1); f1.connect(g1); g1.connect(mainGain);
-            o1.start(); o1.stop(audioCtx.currentTime + 0.6);
+            filter.type = 'highpass'; // Deixa o som "fino" e metálico
+            filter.frequency.value = 1000;
 
-            // Camada 2: Impacto Metálico Curto (Som de lâmina digital)
-            const o2 = audioCtx.createOscillator(); const g2 = audioCtx.createGain();
-            o2.type = 'sine';
-            o2.frequency.setValueAtTime(880, audioCtx.currentTime); // Agudo metálico
-            o2.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.05);
-            
-            g2.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            g2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            o2.connect(g2); g2.connect(mainGain);
-            o2.start(); o2.stop(audioCtx.currentTime + 0.1);
-            
-            mainGain.gain.setValueAtTime(1, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
 
+            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         } else if (type === 'check') {
-            // Som Metálico Curto
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            o.type = 'sine'; o.frequency.setValueAtTime(700, audioCtx.currentTime);
-            g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-            o.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'levelUp') {
-            const notes = [220, 277, 329, 440, 554];
-            notes.forEach((f, i) => {
-                const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-                o.type = 'sine'; o.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.15));
-                g.connect(audioCtx.destination); o.connect(g);
-                g.gain.setValueAtTime(0.04, audioCtx.currentTime + (i * 0.15));
-                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.15) + 0.8);
-                o.start(audioCtx.currentTime + (i * 0.15)); o.stop(audioCtx.currentTime + (i * 0.15) + 0.8);
-            });
+            // BIP DO SISTEMA
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
         }
     }
 
+    // --- AMBIENTE DARK (DUNGEON DRONE) ---
     function startAmbient() {
-        if (ambientOscillator) return;
+        if (ambientActive) return;
+        ambientActive = true;
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        
-        // AMBIENTE DARK DUNGEON (Dissonante e Imprevisível)
-        const notes = [41.20, 46.25, 43.65, 38.89]; // Frequências Sombrias Sintéticas
-        let cur = 0;
-        
-        function play() {
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); const f = audioCtx.createBiquadFilter();
-            o.type = 'sawtooth'; // Onda 'sawtooth' para distorção sintética
-            o.frequency.setValueAtTime(notes[cur], audioCtx.currentTime);
-            
-            f.type = "lowpass"; 
-            f.frequency.value = 120; // Corta agudos, deixa a "presença" opressora
 
-            g.gain.setValueAtTime(0, audioCtx.currentTime);
-            g.gain.linearRampToValueAtTime(0.03, audioCtx.currentTime + 2); // Entrada lenta
-            g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 5.5); // Saída lenta
+        const playDrone = () => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
 
-            o.connect(f); f.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 5.5);
-            
-            cur = (cur + 1) % notes.length;
-            
-            // Loop com silêncio longo e imprevisível para clima dark
-            ambientOscillator = setTimeout(play, 6500); 
-        }
-        play();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(40, audioCtx.currentTime); // Frequência cavernosa
+            osc.frequency.linearRampToValueAtTime(45, audioCtx.currentTime + 8); // Oscilação lenta
+
+            filter.type = 'lowpass';
+            filter.frequency.value = 150; // Corta tudo que não for som de "vazio"
+
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 4); // Fade in épico
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 8); // Fade out
+
+            osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 8);
+            setTimeout(playDrone, 7500);
+        };
+        playDrone();
     }
 
-    // --- LÓGICA DO HUD ---
-    function getRankInfo(lvl) {
-        let reps = 10 + (lvl * 2); let km = (1 + (lvl * 0.1)).toFixed(1);
-        let info = { rank: "E", flex: "Flexões", abd: "Abdominais", agach: "Agachamentos", corr: "Corrida", color: "#00d4ff" };
-        if(lvl >= 5) info.rank = "D";
-        if(lvl >= 15) { info.rank = "C"; info.flex = "Flexões Arqueiro"; info.abd = "Abdominal Infra"; }
-        if(lvl >= 35) { info.rank = "B"; info.flex = "Flexões Diamante"; info.corr = "Corrida Moderada"; }
-        if(lvl >= 80) { info.rank = "S"; info.color = "#ff0055"; }
-        if(lvl >= 100) { info.rank = "NACIONAL"; info.color = "#ffaa00"; }
-        return { ...info, reps, km };
-    }
-
-    function save() { localStorage.setItem('monarch_v21', JSON.stringify(state)); render(); }
+    // --- LOGIC ---
+    function save() { localStorage.setItem('monarch_v22', JSON.stringify(state)); render(); }
 
     function render() {
-        const info = getRankInfo(state.lvl);
-        document.getElementById('rank-name').innerText = info.rank;
-        document.getElementById('rank-name').style.color = info.color;
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('xp-txt').innerText = state.xp + "/100";
         document.getElementById('xp-fill').style.width = state.xp + "%";
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
-
-        const tasks = [`${info.flex}: ${info.reps}`, `${info.abd}: ${info.reps}`, `Agachamentos: ${info.reps}`, `Corrida: ${info.km}km`];
-        document.getElementById('daily-list').innerHTML = tasks.map((t, i) => `<div style="padding:15px 0; border-bottom:1px solid #111"><input type="checkbox" onchange="toggleD(${i})" ${state.dailyChecks[i]?'checked':''} ${state.dailyDone?'disabled':''}> ${t}</div>`).join('');
-        document.getElementById('btn-daily').disabled = !state.dailyChecks.every(c=>c) || state.dailyDone;
-
-        document.getElementById('custom-list').innerHTML = state.quests.map(q => {
-            const ready = q.endTime <= Date.now();
-            return `<div class="quest-card"><div style="display:flex; justify-content:space-between"><div><small>+1 ${q.focus.toUpperCase()}</small><br><b>${q.name}</b><br><span id="t-${q.id}">${ready?'PRONTO':'--:--'}</span></div><button onclick="compC(${q.id})" ${!ready?'disabled':''} style="background:${ready?'var(--neon-blue)':'#222'}; color:black; border:none; padding:10px; font-family:'Orbitron'">${ready?'DONE':'LOCKED'}</button></div></div>`;
-        }).join('');
         updateRadar();
     }
 
     function updateRadar() {
-        const ctx = document.getElementById('radarChart'); if(!ctx) return;
+        const ctx = document.getElementById('radarChart');
+        if(!ctx) return;
         if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, { type:'radar', data:{ labels:['STR','AGI','VIT','INT'], datasets:[{ data:[state.str, state.agi, state.vit, state.int], backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:2 }]}, options:{ scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron'}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 20 }}, plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false }});
+        myChart = new Chart(ctx, {
+            type:'radar',
+            data:{
+                labels:['STR','AGI','VIT','INT'],
+                datasets:[{ data:[state.str, state.agi, state.vit, state.int], backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:2 }]
+            },
+            options:{
+                scales:{ r:{ grid:{color:'rgba(255,255,255,0.05)'}, angleLines:{color:'rgba(255,255,255,0.1)'}, pointLabels:{color:'#00d4ff', font:{family:'Orbitron'}}, ticks:{display:false}, suggestedMin:0, suggestedMax: state.lvl + 15 }},
+                plugins:{legend:{display:false}}, responsive:true, maintainAspectRatio:false
+            }
+        });
     }
-
-    function toggleD(i) { state.dailyChecks[i] = !state.dailyChecks[i]; if(state.dailyChecks[i]) playSound('check'); save(); }
-    function completeDaily() { playSound('levelUp'); state.xp += 50; state.dailyDone = true; state.str++; state.agi++; state.vit++; checkLevelUp(); save(); }
-    function addCustom() { const n = document.getElementById('q-name').value; const t = parseInt(document.getElementById('q-time').value) || 0; if(n) { playSound('click'); state.quests.push({id: Date.now(), name: n, focus: document.getElementById('q-focus').value, endTime: Date.now() + (t*60000)}); document.getElementById('q-name').value = ""; save(); } }
-    function compC(id) { playSound('levelUp'); const q = state.quests.find(x => x.id === id); state[q.focus]++; state.xp += 15; state.quests = state.quests.filter(x => x.id !== id); checkLevelUp(); save(); }
-    function checkLevelUp() { while(state.xp >= 100){ state.xp -= 100; state.lvl++; } }
 
     function showScreen(id) { 
-        playSound('click'); startAmbient();
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
-        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); 
-        document.getElementById(id+'-screen').classList.add('active'); 
-        document.getElementById('nav-'+id).classList.add('active-nav'); 
-        if(id==='status') setTimeout(updateRadar, 50); 
+        playSound('click'); 
+        startAmbient();
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+        document.getElementById(id+'-screen').classList.add('active');
+        document.getElementById('nav-'+id).classList.add('active-nav');
+        if(id==='status') setTimeout(updateRadar, 50);
     }
-
-    setInterval(() => {
-        state.quests.forEach(q => {
-            const diff = q.endTime - Date.now();
-            const el = document.getElementById(`t-${q.id}`);
-            if(el && diff > 0) {
-                const m = Math.floor(diff/60000); const s = Math.floor((diff%60000)/1000);
-                el.innerText = `${m}:${s<10?'0':''}${s} RESTANTE`;
-            } else if(el && diff <= 0) { render(); }
-        });
-    }, 1000);
 
     window.onload = () => { render(); };
 </script>
