@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leveling: Monarch HUD v18.0</title>
+    <title>Solo Leveling: Monarch HUD v18.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -85,9 +85,11 @@
 <script>
     let state = JSON.parse(localStorage.getItem('monarch_v18')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
     let myChart;
+    let ambientOscillator; // Para o som ambiente
 
-    // --- AUDIO SYSTEM (OPERA GX SPACIAL STYLE) ---
+    // --- AUDIO SYSTEM (ELDEN MONARCH STYLE) ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
@@ -95,20 +97,28 @@
         osc.connect(gain); gain.connect(audioCtx.destination);
 
         if (type === 'click') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.12);
+            // SOM "VOOAMM" (Estilo Deslocamento de Sabre de Luz)
+            osc.type = 'sine'; // Onda senoidal pura para suavidade
+            
+            // Começa agudo e desce profundo (O "vooamm")
+            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.3); // Queda profunda
+            
+            // Envelope de volume com "cauda" suave
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+            gain.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.05); // Ataque Aero
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); // Decaimento
+            
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
         } else if (type === 'check') {
+            // BIP DE CONFIRMAÇÃO (RESONANTE)
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
             osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         } else if (type === 'levelUp') {
+            // ACORDE ASCENDENTE ÉPICO
             const notes = [440, 554, 659, 880];
             notes.forEach((f, i) => {
                 const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
@@ -119,6 +129,36 @@
                 o.start(audioCtx.currentTime + (i * 0.1)); o.stop(audioCtx.currentTime + (i * 0.1) + 0.8);
             });
         }
+    }
+
+    // --- SOM AMBIENTE (Melodia Sintética Limgrave) ---
+    function startAmbient() {
+        if (ambientOscillator) return; // Já está tocando
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        // Melodia simples e melancólica estilo Elden Ring
+        const notes = [220, 261, 329, 293, 220, 261, 392, 349]; // Dó, Ré, Mi, Ré...
+        let currentNote = 0;
+
+        function playNextNote() {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(notes[currentNote], audioCtx.currentTime);
+            
+            // Volume ultra baixo para não atrapalhar
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+            
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+            
+            currentNote = (currentNote + 1) % notes.length;
+            // Loop melódico lento
+            ambientOscillator = setTimeout(playNextNote, 2000); 
+        }
+
+        playNextNote();
     }
 
     // --- LOGIC ---
@@ -181,7 +221,8 @@
     function checkLevelUp() { while(state.xp >= 100){ state.xp -= 100; state.lvl++; } }
     
     function showScreen(id) { 
-        playSound('click'); 
+        playSound('click'); // Inicia o som de "vooamm"
+        startAmbient(); // Inicia a melodia ao primeiro clique
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); 
         document.getElementById(id+'-screen').classList.add('active'); 
