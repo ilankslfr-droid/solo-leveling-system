@@ -72,17 +72,6 @@
 
 </div> ```
 
----
-
-### Por que esse é o jeito certo?
-
-1.  **Sem Duplicatas:** Removi aquela segunda caixa de notificação que estava sobrando.
-2.  **Hierarquia:** Percebe que o `system-notification` está **depois** que a `status-screen` fecha (`</div>`), mas **antes** do `hud-container` fechar? Isso faz com que ela flutue por cima de tudo.
-3.  **Limpeza:** Tirei os comentários em texto e os símbolos que estavam "sujando" o seu arquivo.
-
-### Não esqueça do JavaScript!
-Para essa caixa aparecer e sumir, você precisa ter essas duas funções dentro das suas tags `<script>`:
-
 ```javascript
 function showNotif(msg) {
     document.getElementById('notif-message').innerText = msg;
