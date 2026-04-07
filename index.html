@@ -9,45 +9,56 @@
     let state = JSON.parse(localStorage.getItem('solo_v18')) || { lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, dailyChecks: [false,false,false,false], dailyDone: false, quests: [] };
     let myChart;
 
-    // --- SISTEMA DE SOM (SINTETIZADOR MONARCH) ---
+    // --- SISTEMA DE SOM (MONARCH SPACIAL HUD) ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain);
         gain.connect(audioCtx.destination);
 
         if (type === 'click') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            // SOM ESPACIAL (ESTILO OPERA GX): Um "swish" digital
+            osc.type = 'sine'; // Onda senoidal para ser suave/limpo
+            
+            // Começa agudo e desce rápido (Efeito de deslocamento)
+            osc.frequency.setValueAtTime(1600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.12);
+            
+            // Envelope de volume com "cauda" suave para parecer espacial
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.02); // Ataque suave
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12); // Decaimento
+            
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
+            osc.stop(audioCtx.currentTime + 0.12);
         } 
         else if (type === 'check') {
+            // BIP DE CONFIRMAÇÃO (RESONANTE)
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.2);
+            osc.stop(audioCtx.currentTime + 0.15);
         }
         else if (type === 'levelUp') {
-            const notes = [261.63, 329.63, 392.00, 523.25]; // Acorde de Dó Maior
+            // ACORDE ASCENDENTE (SINTETIZADOR DE ELITE)
+            const notes = [440, 554.37, 659.25, 880]; 
             notes.forEach((f, i) => {
                 const o = audioCtx.createOscillator();
                 const g = audioCtx.createGain();
-                o.type = 'sawtooth';
+                o.type = 'sine';
                 o.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.1));
                 g.connect(audioCtx.destination);
                 o.connect(g);
                 g.gain.setValueAtTime(0.05, audioCtx.currentTime + (i * 0.1));
-                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.5);
+                g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (i * 0.1) + 0.8);
                 o.start(audioCtx.currentTime + (i * 0.1));
-                o.stop(audioCtx.currentTime + (i * 0.1) + 0.5);
+                o.stop(audioCtx.currentTime + (i * 0.1) + 0.8);
             });
         }
     }
