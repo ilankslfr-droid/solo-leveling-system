@@ -3,109 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solo Leveling: System 3.0</title>
-    <link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
+    <title>Solo Leveling: System HUD</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
     <style>
-        :root { --blue: #00d4ff; --dark: #050505; --red: #ff3333; --panel: rgba(0, 212, 255, 0.1); }
-        body { background: var(--dark); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
+        :root { --neon-blue: #00d4ff; --bg-dark: #020b12; --glass: rgba(0, 212, 255, 0.05); }
         
-        /* TELAS */
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        body { 
+            background: radial-gradient(circle at center, #0a192f 0%, var(--bg-dark) 100%); 
+            color: white; font-family: 'Rajdhani', sans-serif; margin: 0; padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        /* TELA ESTILO HUD */
+        .hud-container {
+            max-width: 400px; margin: 20px auto; padding: 20px;
+            background: rgba(5, 15, 25, 0.85);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2), inset 0 0 10px rgba(0, 212, 255, 0.1);
+            backdrop-filter: blur(10px); border-radius: 2px;
+        }
+
+        .screen { display: none; animation: scanline 0.5s ease-out; }
         .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        h1, h2 { font-family: 'Orbitron', sans-serif; color: var(--blue); text-transform: uppercase; border-bottom: 1px solid var(--blue); }
+        @keyframes scanline {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* STATUS */
-        .stat-card { background: var(--panel); border: 1px solid var(--blue); padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .lvl-badge { font-size: 2rem; color: var(--blue); text-shadow: 0 0 10px var(--blue); }
-        .points-box { background: gold; color: black; padding: 5px 10px; font-weight: bold; margin-bottom: 15px; text-align: center; }
+        /* CABEÇALHO DO STATUS */
+        .hud-header {
+            border-bottom: 2px solid var(--neon-blue);
+            padding-bottom: 10px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+        }
+
+        .hud-header h1 { 
+            font-family: 'Orbitron'; font-size: 1.2rem; margin: 0; 
+            letter-spacing: 3px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        /* PLAYER CARD ESTILO ANIME */
+        .player-info { margin-bottom: 25px; }
+        .player-name { font-family: 'Orbitron'; font-size: 1.8rem; text-transform: uppercase; margin-bottom: 5px; }
+        .player-title { color: var(--neon-blue); font-size: 0.9rem; letter-spacing: 2px; }
+
+        .rank-display {
+            font-family: 'Orbitron'; font-size: 4rem; position: absolute;
+            top: 20px; right: 20px; opacity: 0.3; color: var(--neon-blue);
+        }
+
+        /* ATRIBUTOS */
+        .stat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+        .stat-label { font-size: 1.1rem; letter-spacing: 1px; color: #ccc; }
+        .stat-value { font-family: 'Orbitron'; color: var(--neon-blue); font-size: 1.2rem; }
+
+        .up-btn {
+            background: none; border: 1px solid var(--neon-blue); color: var(--neon-blue);
+            padding: 2px 10px; cursor: pointer; font-family: 'Orbitron'; margin-left: 10px;
+            transition: 0.3s;
+        }
+        .up-btn:hover { background: var(--neon-blue); color: black; }
+
+        /* BARRAS DE PROGRESSO */
+        .bar-container { background: rgba(0,0,0,0.5); height: 6px; width: 100%; margin: 10px 0; overflow: hidden; }
+        .bar-fill { 
+            background: linear-gradient(90deg, transparent, var(--neon-blue)); 
+            height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--neon-blue);
+        }
 
         /* MISSÕES */
-        .quest-box { border-left: 4px solid var(--blue); background: #111; padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .quest-info { display: flex; flex-direction: column; }
-        .quest-time { color: var(--red); font-weight: bold; font-size: 0.9rem; }
-        
-        /* FORMULÁRIO */
-        .form-group { display: flex; flex-direction: column; gap: 10px; background: #111; padding: 15px; border: 1px solid #333; }
-        input { background: #000; border: 1px solid var(--blue); color: white; padding: 10px; font-family: 'Rajdhani'; }
+        .quest-card {
+            background: var(--glass); border-left: 3px solid var(--neon-blue);
+            padding: 15px; margin: 15px 0; display: flex; justify-content: space-between;
+        }
 
-        /* NAVEGAÇÃO */
-        nav { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 2px solid var(--blue); display: flex; height: 60px; z-index: 100; }
-        nav button { flex: 1; background: none; border: none; color: #555; font-family: 'Orbitron'; font-size: 0.7rem; cursor: pointer; }
-        nav button.active-nav { color: var(--blue); text-shadow: 0 0 5px var(--blue); }
+        /* NAV */
+        nav { 
+            position: fixed; bottom: 0; width: 100%; display: flex; 
+            background: rgba(2, 11, 18, 0.95); border-top: 1px solid var(--neon-blue);
+        }
+        nav button { 
+            flex: 1; padding: 15px; background: none; border: none; 
+            color: #555; font-family: 'Orbitron'; cursor: pointer;
+        }
+        nav button.active-nav { color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
 
-        /* TELA DE PUNIÇÃO */
-        #punishment-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(150, 0, 0, 0.95); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        
-        .xp-bar { background: #222; height: 8px; width: 100%; border-radius: 4px; margin: 5px 0; }
-        .xp-fill { background: var(--blue); height: 100%; width: 0%; transition: 0.5s; }
+        /* PUNIÇÃO */
+        #punishment-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: rgba(20, 0, 0, 0.95); z-index: 1000; display:none;
+            flex-direction:column; justify-content:center; align-items:center;
+        }
     </style>
 </head>
 <body>
 
-    <div id="status-screen" class="screen active">
-        <h1>Janela de Status</h1>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div class="lvl-badge">LVL <span id="lvl">1</span></div>
-            <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
-            <span id="xp-txt" style="font-size: 0.8rem;">0 / 100 XP</span>
-        </div>
-        
-        <div id="points-alert" class="points-box" style="display:none;">PONTOS DISPONÍVEIS: <span id="pts">0</span></div>
-        
-        <div class="stat-card"><span>FORÇA (STR)</span> <div><span id="str">10</span> <button onclick="upStat('str')">+</button></div></div>
-        <div class="stat-card"><span>AGILIDADE (AGI)</span> <div><span id="agi">10</span> <button onclick="upStat('agi')">+</button></div></div>
-        <div class="stat-card"><span>INTELIGÊNCIA (INT)</span> <div><span id="int">10</span> <button onclick="upStat('int')">+</button></div></div>
-        <div class="stat-card"><span>VITALIDADE (VIT)</span> <div><span id="vit">10</span> <button onclick="upStat('vit')">+</button></div></div>
-    </div>
+    <div class="hud-container">
+        <div id="status-screen" class="screen active">
+            <div class="hud-header">
+                <h1>STATUS WINDOW</h1>
+            </div>
+            
+            <div class="rank-display" id="rank-letter">E</div>
+            
+            <div class="player-info">
+                <div class="player-name" id="display-name" onclick="changeName()">HUNTER</div>
+                <div class="player-title">CLASSE: HUMANO</div>
+            </div>
 
-    <div id="quest-screen" class="screen">
-        <h1>Missões Diárias</h1>
-        
-        <div class="form-group">
-            <input type="text" id="q-name" placeholder="Título da Missão">
-            <input type="time" id="q-time">
-            <input type="number" id="q-xp" placeholder="XP Recompensa">
-            <button onclick="addQuest()" style="background: var(--blue); padding: 10px; border:none; font-family: 'Orbitron';">CRIAR MISSÃO</button>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>LEVEL: <span id="lvl">1</span></span>
+                    <span id="xp-txt">0/100 XP</span>
+                </div>
+                <div class="bar-container"><div id="xp-fill" class="bar-fill"></div></div>
+            </div>
+
+            <div id="pts-alert" style="color: gold; font-size: 0.8rem; margin-bottom: 10px; display:none;">
+                [PONTOS DISPONÍVEIS: <span id="pts">0</span>]
+            </div>
+
+            <div class="stat-row"><span class="stat-label">FORÇA (STR)</span> <div><span class="stat-value" id="str">10</span><button class="up-btn" onclick="upStat('str')">+</button></div></div>
+            <div class="stat-row"><span class="stat-label">AGILIDADE (AGI)</span> <div><span class="stat-value" id="agi">10</span><button class="up-btn" onclick="upStat('agi')">+</button></div></div>
+            <div class="stat-row"><span class="stat-label">VITALIDADE (VIT)</span> <div><span class="stat-value" id="vit">10</span><button class="up-btn" onclick="upStat('vit')">+</button></div></div>
+            <div class="stat-row"><span class="stat-label">INTELIGÊNCIA (INT)</span> <div><span class="stat-value" id="int">10</span><button class="up-btn" onclick="upStat('int')">+</button></div></div>
         </div>
 
-        <div id="quest-list"></div>
+        <div id="quest-screen" class="screen">
+            <div class="hud-header"><h1>DAILY QUESTS</h1></div>
+            
+            <div style="background: rgba(0,212,255,0.05); padding: 15px; margin-bottom: 20px; border: 1px dashed var(--neon-blue);">
+                <input type="text" id="q-name" placeholder="Nova Missão" style="width:100%; background:none; border:none; border-bottom:1px solid #444; color:white; margin-bottom:10px; padding:5px;">
+                <div style="display:flex; gap:10px;">
+                    <input type="time" id="q-time" style="background:none; border:1px solid #444; color:white; flex:1;">
+                    <input type="number" id="q-xp" placeholder="XP" style="background:none; border:1px solid #444; color:white; width:60px;">
+                </div>
+                <button onclick="addQuest()" style="width:100%; margin-top:10px; background:var(--neon-blue); border:none; padding:10px; font-family:'Orbitron'; font-weight:bold;">REGISTRAR QUEST</button>
+            </div>
+
+            <div id="quest-list"></div>
+        </div>
     </div>
 
     <div id="punishment-overlay">
-        <h1 style="color: white; border: none; font-size: 3rem;">PUNIÇÃO</h1>
-        <p style="font-size: 1.5rem;">VOCÊ FALHOU NO HORÁRIO</p>
-        <p>-20 XP | -1 EM TODOS OS STATUS</p>
-        <button onclick="acceptPunishment()" style="background: white; color: black; padding: 15px 30px; font-family: 'Orbitron'; font-weight: bold; border: none; cursor: pointer;">ACEITAR</button>
+        <h1 style="color: #ff3333; font-family: 'Orbitron';">PENALIDADE</h1>
+        <p>VOCÊ FALHOU EM CONCLUIR A MISSÃO DIÁRIA</p>
+        <button onclick="acceptPunishment()" style="background: white; padding: 10px 30px; border:none; font-family:'Orbitron'; font-weight:bold;">ACEITAR</button>
     </div>
 
     <nav>
         <button onclick="showScreen('status')" id="nav-status" class="active-nav">STATUS</button>
-        <button onclick="showScreen('quest')" id="nav-quest">MISSÕES</button>
+        <button onclick="showScreen('quest')" id="nav-quest">QUESTS</button>
     </nav>
 
     <script>
-        let state = JSON.parse(localStorage.getItem('solo_v3')) || {
-            lvl: 1, xp: 0, pts: 0, str: 10, agi: 10, int: 10, vit: 10, quests: []
+        // Lógica de Estado (Salva no LocalStorage)
+        let state = JSON.parse(localStorage.getItem('solo_hud_v1')) || {
+            name: "SUNG JIN-WOO", lvl: 1, xp: 0, pts: 0, str: 10, agi: 10, vit: 10, int: 10, quests: []
         };
 
         function save() {
-            localStorage.setItem('solo_v3', JSON.stringify(state));
+            localStorage.setItem('solo_hud_v1', JSON.stringify(state));
             render();
         }
 
-        function showScreen(name) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
-            document.getElementById(name + '-screen').classList.add('active');
-            document.getElementById('nav-' + name).classList.add('active-nav');
+        const getRank = (l) => {
+            if(l >= 46) return "S"; if(l >= 31) return "A"; if(l >= 21) return "B";
+            if(l >= 13) return "C"; if(l >= 6) return "D"; return "E";
+        }
+
+        function render() {
+            document.getElementById('display-name').innerText = state.name;
+            document.getElementById('lvl').innerText = state.lvl;
+            document.getElementById('rank-letter').innerText = getRank(state.lvl);
+            document.getElementById('xp-fill').style.width = state.xp + "%";
+            document.getElementById('xp-txt').innerText = state.xp + "/100 XP";
+            document.getElementById('pts').innerText = state.pts;
+            document.getElementById('pts-alert').style.display = state.pts > 0 ? 'block' : 'none';
+            
+            ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
+
+            const list = document.getElementById('quest-list');
+            list.innerHTML = "";
+            state.quests.forEach(q => {
+                list.innerHTML += `
+                    <div class="quest-card">
+                        <div>
+                            <div style="font-size:0.7rem; color:var(--neon-blue)">LIMIT: ${q.time}</div>
+                            <div style="font-size:1.2rem; font-family:'Orbitron'">${q.name}</div>
+                        </div>
+                        <button onclick="completeQuest(${q.id})" class="up-btn">CONCLUIR</button>
+                    </div>
+                `;
+            });
         }
 
         function addQuest() {
@@ -121,63 +217,35 @@
         function completeQuest(id) {
             const idx = state.quests.findIndex(q => q.id === id);
             state.xp += state.quests[idx].xp;
-            if(state.xp >= 100) { state.xp = 0; state.lvl++; state.pts += 5; }
+            while(state.xp >= 100) { state.xp -= 100; state.lvl++; state.pts += 5; }
             state.quests.splice(idx, 1);
             save();
         }
 
         function checkTime() {
             const now = new Date();
-            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-            
-            state.quests.forEach((q, index) => {
-                if (currentTime > q.time) {
-                    document.getElementById('punishment-overlay').style.display = 'flex';
-                }
+            const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            state.quests.forEach(q => {
+                if (timeStr > q.time) document.getElementById('punishment-overlay').style.display = 'flex';
             });
         }
 
+        function upStat(s) { if(state.pts > 0) { state[s]++; state.pts--; save(); } }
+        function changeName() { const n = prompt("Novo Nome:", state.name); if(n) { state.name = n; save(); } }
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+            document.getElementById(id + '-screen').classList.add('active');
+            document.getElementById('nav-' + id).classList.add('active-nav');
+        }
         function acceptPunishment() {
-            state.xp = Math.max(0, state.xp - 20);
-            state.str = Math.max(1, state.str - 1);
-            state.agi = Math.max(1, state.agi - 1);
-            state.int = Math.max(1, state.int - 1);
-            state.vit = Math.max(1, state.vit - 1);
-            state.quests = []; // Limpa missões falhas
+            state.xp = 0; state.quests = [];
+            ['str','agi','vit','int'].forEach(s => state[s] = Math.max(1, state[s]-1));
             document.getElementById('punishment-overlay').style.display = 'none';
             save();
         }
 
-        function upStat(s) {
-            if(state.pts > 0) { state[s]++; state.pts--; save(); }
-        }
-
-        function render() {
-            document.getElementById('lvl').innerText = state.lvl;
-            document.getElementById('xp-fill').style.width = state.xp + "%";
-            document.getElementById('xp-txt').innerText = state.xp + " / 100 XP";
-            document.getElementById('pts').innerText = state.pts;
-            document.getElementById('points-alert').style.display = state.pts > 0 ? 'block' : 'none';
-            
-            ['str','agi','int','vit'].forEach(s => document.getElementById(s).innerText = state[s]);
-
-            const list = document.getElementById('quest-list');
-            list.innerHTML = "";
-            state.quests.forEach(q => {
-                list.innerHTML += `
-                    <div class="quest-box">
-                        <div class="quest-info">
-                            <span style="font-size:1.2rem">${q.name}</span>
-                            <span class="quest-time">LIMITE: ${q.time}</span>
-                        </div>
-                        <button onclick="completeQuest(${q.id})" class="btn-ok" style="background:var(--blue); color:black; border:none; padding:10px; font-weight:bold;">CONCLUÍDO</button>
-                    </div>
-                `;
-            });
-        }
-
-        // Checar tempo a cada 5 segundos
-        setInterval(checkTime, 5000);
+        setInterval(checkTime, 10000);
         render();
     </script>
 </body>
