@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monarch System v9.7 - Resolve</title>
+    <title>Monarch System v10.0 - Final Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,7 +16,8 @@
         .active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
-        .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon); border-bottom: 1px solid var(--neon); padding-bottom: 8px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon); padding-bottom: 8px; margin-bottom: 15px; }
+        .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon); text-transform: uppercase; letter-spacing: 2px; margin: 0; }
         
         /* Stats */
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); }
@@ -24,7 +25,7 @@
         .xp-bg { background: #111; height: 10px; width: 100%; margin: 10px 0; border: 1px solid #333; }
         .xp-fill { background: var(--neon); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--neon); }
 
-        /* Quest UI (Restored & Fixed) */
+        /* Quest UI */
         .quest-item { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); margin-bottom: 12px; padding: 15px; }
         .daily-item { display: flex; align-items: center; gap: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); margin-bottom: 12px; padding: 15px; font-family: 'Orbitron'; font-size: 0.85rem; border-left: 4px solid var(--neon); }
         .timer-display { font-family: 'Orbitron'; color: var(--neon); font-size: 1.6rem; text-align: center; margin: 10px 0; text-shadow: 0 0 10px var(--neon); }
@@ -38,24 +39,33 @@
         .shop-item p { font-size: 0.75rem; margin: 5px 0; color: #aaa; }
 
         /* Buttons */
-        .main-btn { width: 100%; background: #000; border: 1px solid var(--neon); color: white; padding: 15px; font-family: 'Orbitron'; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-weight: bold; }
+        .main-btn { width: 100%; background: #000; border: 1px solid var(--neon); color: white; padding: 15px; font-family: 'Orbitron'; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-weight: bold; font-size: 0.75rem; }
         .main-btn:disabled { opacity: 0.2; cursor: not-allowed; }
         .btn-gold { border-color: var(--gold); color: var(--gold); }
         .btn-danger { border-color: var(--danger); color: var(--danger); }
         
+        .settings-btn { background: none; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; font-family: 'Orbitron'; cursor: pointer; font-size: 0.6rem; }
+
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon); z-index: 2500; height: 70px; }
         nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; }
         nav button.active-nav { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
 
-        #system-notification, #penalty-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; text-align: center; backdrop-filter: blur(10px); }
+        #system-notification, #penalty-overlay, #modal-settings { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; text-align: center; backdrop-filter: blur(10px); }
         .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; background: var(--panel); border: 2px solid var(--neon); padding: 25px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
+<audio id="snd-tab" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+<audio id="snd-click" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+<audio id="snd-bg" loop src="https://www.chosic.com/wp-content/uploads/2021/07/The-Darkest-Path.mp3"></audio>
+
 <div class="hud-container">
     <div id="status-screen" class="screen active">
-        <div class="hud-header"><h1>PLAYER STATUS</h1></div>
+        <div class="hud-header">
+            <h1>PLAYER STATUS</h1>
+            <button class="settings-btn" onclick="openSettings()">SISTEMA</button>
+        </div>
         <p id="player-title" style="color:var(--gold); font-family:'Orbitron'; font-size:0.7rem; margin:0;">TITULO: NOVATO</p>
         <h2 style="font-family:'Orbitron'; margin:5px 0;">SUNG JIN-WOO <span id="rank-txt" style="float:right; font-size:0.9rem; color:var(--neon);">[RANK E]</span></h2>
         <p id="player-job" style="color:var(--neon); font-size:0.75rem; margin-bottom:10px;">CLASSE: NENHUMA</p>
@@ -70,7 +80,7 @@
         <div class="stat-row"><span>AGI</span> <span id="agi" class="stat-val">10</span></div>
         <div class="stat-row"><span>VIT</span> <span id="vit" class="stat-val">10</span></div>
         <div class="stat-row"><span>INT</span> <span id="int" class="stat-val">10</span></div>
-        <div id="job-btn-container"></div>
+        <p id="active-equip-txt" style="font-size:0.6rem; color:var(--neon); margin-top:5px; text-align:center;">EQUIP: NENHUM</p>
         <div style="height: 180px; margin-top: 15px;"><canvas id="radarChart"></canvas></div>
     </div>
 
@@ -83,15 +93,15 @@
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>TRAINING</h1></div>
         <div style="background: rgba(0,212,255,0.1); padding:15px; margin-bottom:20px; border: 1px solid var(--neon);">
-            <input type="text" id="q-name" placeholder="NOME DO TREINO..." style="margin-bottom:8px; background:#000; border:1px solid var(--neon); color:white; padding:10px; width:100%; box-sizing:border-box; font-family:'Orbitron';">
-            <div style="display: flex; gap: 5px;">
-                <select id="q-attr" style="flex: 2; background:#000; border:1px solid var(--neon); color:white; padding:10px; font-family:'Orbitron'; font-size:0.7rem;">
+            <input type="text" id="q-name" placeholder="NOME DO TREINO..." style="margin-bottom:8px; background:#000; border:1px solid var(--neon); color:white; padding:12px; width:100%; box-sizing:border-box; font-family:'Orbitron';">
+            <div style="display: flex; gap: 8px;">
+                <select id="q-attr" style="flex: 2; background:#000; border:1px solid var(--neon); color:white; padding:12px; font-family:'Orbitron'; font-size:0.7rem;">
                     <option value="str">FORÇA (STR)</option>
                     <option value="agi">AGILIDADE (AGI)</option>
                     <option value="vit">VITALIDADE (VIT)</option>
                     <option value="int">INTELIGÊNCIA (INT)</option>
                 </select>
-                <input type="number" id="q-time" placeholder="MIN" style="flex: 1; background:#000; border:1px solid var(--neon); color:white; padding:10px; font-family:'Orbitron';">
+                <input type="number" id="q-time" placeholder="MIN" style="flex: 1; background:#000; border:1px solid var(--neon); color:white; padding:12px; font-family:'Orbitron'; width: 80px;">
             </div>
             <button onclick="createNewQuest()" class="main-btn">ADICIONAR MISSÃO</button>
         </div>
@@ -106,6 +116,15 @@
             <button onclick="setShopTab('equip')" id="tab-equip">EQUIP</button>
         </div>
         <div id="shop-content"></div>
+    </div>
+
+    <div id="modal-settings">
+        <div class="modal-content">
+            <h2 style="font-family:'Orbitron'; color:var(--neon); margin-bottom:20px;">CONFIGURAÇÕES</h2>
+            <button class="main-btn" onclick="toggleMusic()">ON/OFF MÚSICA</button>
+            <p style="font-size:0.6rem; color:#666; margin:15px 0;">V 10.0 - MONARCH CORE</p>
+            <button onclick="closeSettings()" class="main-btn btn-danger">FECHAR</button>
+        </div>
     </div>
 
     <div id="penalty-overlay">
@@ -141,18 +160,37 @@
         dailyChecks: [], dailyDone: false, customQuests: [],
         job: "", titles: ["NOVATO"], currentTitle: "NOVATO",
         activeEquip: { name: "NENHUM", multiplier: 1 },
-        lastUpdate: new Date().toDateString(), penaltyActive: false
+        lastUpdate: new Date().toDateString(), penaltyActive: false,
+        isMusicOn: false
     };
 
     let activeIntervals = {};
     let radarChart;
     let currentShopTab = 'potions';
 
+    function playSound(id) { 
+        const s = document.getElementById(id); 
+        if(s) { s.currentTime = 0; s.play().catch(()=>{}); } 
+    }
+
+    function toggleMusic() {
+        const bg = document.getElementById('snd-bg');
+        if (state.isMusicOn) { bg.pause(); state.isMusicOn = false; } 
+        else { bg.play().catch(()=>{}); state.isMusicOn = true; }
+        save();
+    }
+
     function save() { localStorage.setItem('monarch_v8_save', JSON.stringify(state)); renderAll(); }
     function getRequiredXP(lvl) { return 100 + (lvl - 1) * 10; }
-    function addXP(amount) { state.xp += amount * state.activeEquip.multiplier; while (state.xp >= getRequiredXP(state.lvl)) { state.xp -= getRequiredXP(state.lvl); state.lvl++; } }
+    function addXP(amount) { 
+        state.xp += amount * state.activeEquip.multiplier; 
+        while (state.xp >= getRequiredXP(state.lvl)) { 
+            state.xp -= getRequiredXP(state.lvl); 
+            state.lvl++; 
+            playSound('snd-click');
+        } 
+    }
 
-    // --- DAILY LOGIC (RANK BASED) ---
     function getDailyTasks() {
         const lvl = state.lvl;
         if(lvl >= 81) return ["Flexões 1 Braço: 200", "Abdominais Dragon: 200", "Pistol Squat: 200", "Corrida c/ Peso: 20km"];
@@ -165,15 +203,12 @@
 
     function renderDaily() {
         const tasks = getDailyTasks();
-        // Sincroniza checks com o tamanho da lista se necessário
         if (state.dailyChecks.length !== tasks.length) { state.dailyChecks = new Array(tasks.length).fill(false); }
-        
         document.getElementById('daily-list').innerHTML = tasks.map((t, i) => `
             <div class="daily-item">
                 <input type="checkbox" onchange="toggleDaily(${i})" ${state.dailyChecks[i] ? 'checked' : ''} ${state.dailyDone ? 'disabled' : ''}> 
                 <span style="${state.dailyChecks[i] ? 'text-decoration:line-through; opacity:0.5;' : ''}">${t}</span>
             </div>`).join('');
-        
         document.getElementById('btn-collect').disabled = !state.dailyChecks.every(v => v) || state.dailyDone;
         document.getElementById('rank-txt').innerText = `[RANK ${getRankLabel()}]`;
     }
@@ -183,36 +218,44 @@
         if(state.lvl >= 21) return "C"; if(state.lvl >= 11) return "D"; return "E";
     }
 
-    function toggleDaily(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
+    function toggleDaily(i) { playSound('snd-click'); state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
     function collectDailyRewards() { state.gold += 100; addXP(50); state.str++; state.dailyDone = true; showNotif("RECOMPENSAS DO DIA COLETADAS!"); save(); }
 
-    // --- SHOP ---
-    function setShopTab(t) { currentShopTab = t; renderShop(); }
     function renderShop() {
         let html = '';
         if (currentShopTab === 'potions') {
             html = `
-                <div class="shop-item"><b>POÇÃO DE XP</b> (+50 XP)<button class="main-btn btn-gold" onclick="buyItem('xp', 150)">150 GOLD</button></div>
-                <div class="shop-item"><b>BÊNÇÃO DE VITALIDADE</b> (+1 VIT)<button class="main-btn btn-gold" onclick="buyItem('vit', 300)">300 GOLD</button></div>
-                <div class="shop-item"><b>BÊNÇÃO DE CELERIDADE</b> (+1 AGI)<button class="main-btn btn-gold" onclick="buyItem('agi', 300)">300 GOLD</button></div>
-                <div class="shop-item"><b>BÊNÇÃO DE INTELLECTO</b> (+1 INT)<button class="main-btn btn-gold" onclick="buyItem('int', 300)">300 GOLD</button></div>`;
+                <div class="shop-item"><b>POÇÃO DE XP PEQUENA</b> (+50 XP)<button class="main-btn btn-gold" onclick="buyItem('xp', 50, 150)">150 GOLD</button></div>
+                <div class="shop-item"><b>POÇÃO DE XP GRANDE</b> (+200 XP)<button class="main-btn btn-gold" onclick="buyItem('xp', 200, 500)">500 GOLD</button></div>
+                <div class="shop-item"><b>ELIXIR DE FORÇA</b> (+1 STR)<button class="main-btn btn-gold" onclick="buyItem('str', 1, 400)">400 GOLD</button></div>
+                <div class="shop-item"><b>BÊNÇÃO DE VITALIDADE</b> (+1 VIT)<button class="main-btn btn-gold" onclick="buyItem('vit', 1, 300)">300 GOLD</button></div>
+                <div class="shop-item"><b>BÊNÇÃO DE CELERIDADE</b> (+1 AGI)<button class="main-btn btn-gold" onclick="buyItem('agi', 1, 300)">300 GOLD</button></div>
+                <div class="shop-item"><b>BÊNÇÃO DE INTELLECTO</b> (+1 INT)<button class="main-btn btn-gold" onclick="buyItem('int', 1, 300)">300 GOLD</button></div>`;
         } else if (currentShopTab === 'titles') {
-            html = `<div class="shop-item"><b>MONARCA DAS SOMBRAS</b><p>Prestígio Máximo</p><button class="main-btn btn-gold" onclick="buyTitle('MONARCA DAS SOMBRAS', 5000)">5000 GOLD</button></div>`;
+            html = `
+                <div class="shop-item"><b>DESBRAVADOR</b><p>Título básico para iniciantes</p><button class="main-btn btn-gold" onclick="buyTitle('DESBRAVADOR', 500)">500 GOLD</button></div>
+                <div class="shop-item"><b>ASSASSINO DE CAVALEIROS</b><p>Aumenta o respeito visual</p><button class="main-btn btn-gold" onclick="buyTitle('ASSASSINO DE CAVALEIROS', 1500)">1500 GOLD</button></div>
+                <div class="shop-item"><b>MONARCA DAS SOMBRAS</b><p>O Título Supremo</p><button class="main-btn btn-gold" onclick="buyTitle('MONARCA DAS SOMBRAS', 5000)">5000 GOLD</button></div>`;
         } else if (currentShopTab === 'equip') {
-            html = `<div class="shop-item rarity-legend"><b>MANTO LENDÁRIO</b> (3.0x XP)<button class="main-btn btn-gold" onclick="buyEquip('MANTO LENDÁRIO', 3.0, 10000)">10000 GOLD</button></div>`;
+            html = `
+                <div class="shop-item"><b>PESOS DE TREINO</b> (1.2x XP)<button class="main-btn btn-gold" onclick="buyEquip('PESOS DE TREINO', 1.2, 800)">800 GOLD</button></div>
+                <div class="shop-item"><b>ADAGA DE RASAKA</b> (1.5x XP)<button class="main-btn btn-gold" onclick="buyEquip('ADAGA DE RASAKA', 1.5, 2500)">2500 GOLD</button></div>
+                <div class="shop-item" style="border-color:var(--legendary)"><b>MANTO LENDÁRIO</b> (3.0x XP)<button class="main-btn btn-gold" onclick="buyEquip('MANTO LENDÁRIO', 3.0, 10000)">10000 GOLD</button></div>`;
         }
         document.getElementById('shop-content').innerHTML = html;
         document.querySelectorAll('.shop-tabs button').forEach(b => b.classList.toggle('active-tab', b.id === `tab-${currentShopTab}`));
     }
 
-    function buyItem(type, price) {
-        if (state.gold >= price) { state.gold -= price; if(type==='xp') addXP(50); else state[type]++; showNotif("POÇÃO CONSUMIDA!"); save(); }
-        else showNotif("GOLD INSUFICIENTE!");
+    function buyItem(type, amount, price) {
+        if (state.gold >= price) { 
+            state.gold -= price; 
+            if(type==='xp') addXP(amount); else state[type] += amount; 
+            playSound('snd-click'); showNotif("ITEM ADQUIRIDO COM SUCESSO!"); save(); 
+        } else showNotif("GOLD INSUFICIENTE!");
     }
-    function buyTitle(n, p) { if(state.gold>=p){ state.gold-=p; state.currentTitle=n; save(); } }
-    function buyEquip(n, m, p) { if(state.gold>=p){ state.gold-=p; state.activeEquip={name:n, multiplier:m}; save(); } }
+    function buyTitle(n, p) { if(state.gold>=p){ state.gold-=p; state.currentTitle=n; playSound('snd-click'); save(); } else showNotif("GOLD INSUFICIENTE!"); }
+    function buyEquip(n, m, p) { if(state.gold>=p){ state.gold-=p; state.activeEquip={name:n, multiplier:m}; playSound('snd-click'); save(); } else showNotif("GOLD INSUFICIENTE!"); }
 
-    // --- CORE ---
     function renderAll() {
         const reqXP = getRequiredXP(state.lvl);
         document.getElementById('lvl').innerText = state.lvl;
@@ -220,6 +263,7 @@
         document.getElementById('xp-fill').style.width = `${(state.xp / reqXP) * 100}%`;
         document.getElementById('gold-txt').innerText = state.gold;
         document.getElementById('player-title').innerText = `TITULO: ${state.currentTitle}`;
+        document.getElementById('active-equip-txt').innerText = `EQUIP: ${state.activeEquip.name} (${state.activeEquip.multiplier}x)`;
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
         
         renderDaily();
@@ -229,7 +273,7 @@
             <div class="quest-item">
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--neon); font-family:'Orbitron';">
                     <span>${q.name} (+1 ${q.attr.toUpperCase()})</span>
-                    <span onclick="deleteQuest(${i})" style="color:var(--danger); cursor:pointer;">[EXCLUIR]</span>
+                    <span onclick="deleteQuest(${i})" style="color:var(--danger); cursor:pointer;">[X]</span>
                 </div>
                 <div class="timer-display">${formatSeconds(q.remaining)}</div>
                 <button class="main-btn" onclick="startQuest(${i})" ${q.isRunning || q.isDone ? 'disabled' : ''}>${q.isDone ? 'CONCLUÍDO' : 'INICIAR'}</button>
@@ -240,11 +284,17 @@
     function createNewQuest() { 
         const n = document.getElementById('q-name').value;
         const t = parseInt(document.getElementById('q-time').value);
-        if(n && t) { state.customQuests.push({name:n, attr:document.getElementById('q-attr').value, remaining:t*60, totalTime:t*60, isRunning:false, isDone:false}); save(); }
+        if(n && t) { 
+            state.customQuests.push({name:n, attr:document.getElementById('q-attr').value, remaining:t*60, totalTime:t*60, isRunning:false, isDone:false}); 
+            document.getElementById('q-name').value = '';
+            document.getElementById('q-time').value = '';
+            save(); 
+        }
     }
 
     function startQuest(i) {
         if(state.customQuests[i].isRunning) return;
+        playSound('snd-click');
         state.customQuests[i].isRunning = true;
         activeIntervals[i] = setInterval(() => {
             if(state.customQuests[i].remaining <= 0) {
@@ -259,8 +309,17 @@
     function formatSeconds(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
     function showNotif(m) { document.getElementById('notif-message').innerText = m; document.getElementById('system-notification').style.display = 'block'; }
     function closeNotif() { document.getElementById('system-notification').style.display = 'none'; }
+    function openSettings() { playSound('snd-tab'); document.getElementById('modal-settings').style.display = 'block'; }
+    function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
     function clearPenalty() { state.penaltyActive = false; document.getElementById('penalty-overlay').style.display = 'none'; save(); }
-    function changeTab(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(`${id}-screen`).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById(`nav-${id}`).classList.add('active-nav'); if(id==='status') setTimeout(updateRadar, 100); }
+    function changeTab(id) { 
+        playSound('snd-tab');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+        document.getElementById(`${id}-screen`).classList.add('active'); 
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); 
+        document.getElementById(`nav-${id}`).classList.add('active-nav'); 
+        if(id==='status') setTimeout(updateRadar, 100); 
+    }
 
     function updateRadar() {
         const ctx = document.getElementById('radarChart'); if(!ctx) return;
@@ -277,11 +336,12 @@
         if (state.lastUpdate !== today) {
             if (!state.dailyDone && state.lvl > 1) state.penaltyActive = true;
             state.dailyDone = false;
-            state.dailyChecks = []; // Força reset para nova lista do dia
+            state.dailyChecks = [];
             state.lastUpdate = today;
             save();
         }
         if (state.penaltyActive) document.getElementById('penalty-overlay').style.display = 'block';
+        if (state.isMusicOn) { document.getElementById('snd-bg').play().catch(()=>{ state.isMusicOn = false; }); }
         renderAll();
     };
 </script>
