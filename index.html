@@ -31,17 +31,14 @@
 
         .shop-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
         .shop-tabs button { flex: 1; padding: 10px; font-size: 0.6rem; border: 1px solid var(--neon); background: none; color: var(--neon); font-family: 'Orbitron'; cursor: pointer; }
-        
-        /* CSS CORRIGIDO PARA O BOTÃO ATIVO */
         .shop-tabs button.active-tab { background: var(--neon) !important; color: black !important; font-weight: bold; }
-
         .shop-item { background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--neon); padding: 12px; margin-bottom: 10px; }
 
         .main-btn { width: 100%; background: #000; border: 1px solid var(--neon); color: white; padding: 12px; font-family: 'Orbitron'; cursor: pointer; margin-top: 5px; text-transform: uppercase; font-size: 0.75rem; }
         .main-btn:disabled { opacity: 0.2; cursor: not-allowed; }
         
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon); z-index: 2500; height: 70px; }
-        nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; }
+        nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; }
         nav button.active-nav { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
 
         #modal-settings, #penalty-overlay, #system-notification { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; }
@@ -227,7 +224,6 @@
     function deleteQuest(i) { clearInterval(activeIntervals[i]); state.customQuests.splice(i, 1); save(); }
 
     function setShopTab(t) { currentShopTab = t; renderShop(); }
-    
     function renderShop() {
         let html = '';
         if (currentShopTab === 'potions') {
@@ -236,11 +232,126 @@
             <div class="shop-item"><b>POÇÃO DE XP SUPREMA (+300 XP)</b><button class="main-btn" onclick="buyItem('xp_big', 3000)">3000 GOLD</button></div>
             <div class="shop-item"><b>ELIXIR DE FORÇA (+1 FORÇA)</b><button class="main-btn" onclick="buyItem('str', 1200)">1200 GOLD</button></div>
             <div class="shop-item"><b>ELIXIR DE AGILIDADE (+1 AGILIDADE)</b><button class="main-btn" onclick="buyItem('agi', 1200)">1200 GOLD</button></div>
-            <div class="shop-item"><b>ELIXIR DE INTELIGÊNCIA (+1 INT)</b><button class="main-btn" onclick="buyItem('int', 1200)">1200 GOLD</button></div>
-            <div class="shop-item"><b>ELIXIR DE VITALIDADE (+1 VIT)</b><button class="main-btn" onclick="buyItem('vit', 1200)">1200 GOLD</button></div>`
+            <div class="shop-item"><b>ELIXIR DE INTELIGÊNCIA (+1 INTELIGÊNCIA)</b><button class="main-btn" onclick="buyItem('int', 1200)">1200 GOLD</button></div>
+            <div class="shop-item"><b>ELIXIR DE VITALIDADE (+1 VITALIDADE)</b><button class="main-btn" onclick="buyItem('vit', 1200)">1200 GOLD</button></div>`
         } else if (currentShopTab === 'titles') {
             html = `<div class="shop-item"><b>CAÇADOR DE LOBOS</b><button class="main-btn" onclick="buyTitle('CAÇADOR DE LOBOS', 500)">500 GOLD</button></div>
             <div class="shop-item"><b>ASSASSINO DE REIS</b><button class="main-btn" onclick="buyTitle('ASSASSINO DE REIS', 1000)">1000 GOLD</button></div>
             <div class="shop-item"><b>GOVERNANTE</b><button class="main-btn" onclick="buyTitle('GOVERNANTE', 1500)">1500 GOLD</button></div>
             <div class="shop-item"><b>REI DOS MORTOS</b><button class="main-btn" onclick="buyTitle('REI DOS MORTOS', 2000)">2000 GOLD</button></div>
-            <div class="shop-item"><b>MONARCA DAS SOMBRAS</b><button class="main-btn" onclick="buyTitle('MONARCA DAS SOMBRAS', 2500)">250
+            <div class="shop-item"><b>MONARCA DAS SOMBRAS</b><button class="main-btn" onclick="buyTitle('MONARCA DAS SOMBRAS', 2500)">2500 GOLD</button></div>`;
+        } else if (currentShopTab === 'equip') {
+            html = `<div class="shop-item"><b>ADAGA DE KASAKA (1.2x XP)</b><button class="main-btn" onclick="buyEquip('KASAKA', 1.2, 1200)">1200 GOLD</button></div>
+            <div class="shop-item"><b>PRESA VENENOSA DE KASAKA (1.4x XP)</b><button class="main-btn" onclick="buyEquip('VENENO', 1.4, 1800)">1800 GOLD</button></div>
+            <div class="shop-item"><b>ARMADURA DO CAVALEIRO DEMONÍACO (1.7x XP)</b><button class="main-btn" onclick="buyEquip('ARMOR_DEMON', 1.7, 2500)">2500 GOLD</button></div>
+            <div class="shop-item"><b>ORBE DA AVAREZA (2.0x XP)</b><button class="main-btn" onclick="buyEquip('ORB', 2.0, 3200)">3200 GOLD</button></div>
+            <div class="shop-item"><b>CAPACETE DO REI DEMÔNIO (2.5x XP)</b><button class="main-btn" onclick="buyEquip('HELM_DEMON', 2.5, 4000)">4000 GOLD</button></div>
+            <div class="shop-item"><b>ADAGAS DO REI DEMÔNIO (3.0x XP)</b><button class="main-btn" onclick="buyEquip('DAGGER_DEMON', 3.0, 5000)">5000 GOLD</button></div>`;
+        }
+        document.getElementById('shop-content').innerHTML = html;
+
+        // LINHA ADICIONADA: Ativa a cor neon no botão clicado
+        document.querySelectorAll('.shop-tabs button').forEach(btn => {
+            btn.classList.toggle('active-tab', btn.id === `tab-${currentShopTab}`);
+        });
+    }
+
+    function buyItem(type, price) { 
+        if(state.gold >= price) { 
+            state.gold -= price; 
+            if(type === 'xp_small') addXP(50); 
+            else if(type === 'xp_medium') addXP(150);
+            else if(type === 'xp_big') addXP(300);
+            else state[type]++; 
+            save(); 
+        } 
+    }
+    function buyTitle(n, p) { if(state.gold >= p) { state.gold -= p; state.currentTitle = n; save(); } }
+    function buyEquip(n, m, p) { if(state.gold >= p) { state.gold -= p; state.activeEquip = {name:n, multiplier:m}; save(); } }
+
+    function updateRadar() {
+        const ctx = document.getElementById('radarChart');
+        if(!ctx) return;
+        if(radarChart) radarChart.destroy();
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['STR', 'AGI', 'VIT', 'INT'],
+                datasets: [{
+                    data: [state.str, state.agi, state.vit, state.int],
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderColor: '#00d4ff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff' }, ticks: { display: false }, suggestedMin: 0 } },
+                plugins: { legend: { display: false } },
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    function changeTab(id) {
+        document.getElementById('snd-tab').play().catch(()=>{});
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`${id}-screen`).classList.add('active');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
+        document.getElementById(`nav-${id}`).classList.add('active-nav');
+        if(id === 'status') setTimeout(updateRadar, 100);
+        renderAll();
+    }
+
+    function renderAll() {
+        const reqXP = getRequiredXP(state.lvl);
+        document.getElementById('lvl').innerText = state.lvl;
+        document.getElementById('xp-txt').innerText = `${Math.floor(state.xp)}/${reqXP}`;
+        document.getElementById('xp-fill').style.width = `${(state.xp / reqXP) * 100}%`;
+        document.getElementById('gold-txt').innerText = state.gold;
+        document.getElementById('rank-txt').innerText = `[RANK ${getRankLabel()}]`;
+        document.getElementById('player-title').innerText = `TITULO: ${state.currentTitle}`;
+        document.getElementById('active-equip-txt').innerText = `EQUIP: ${state.activeEquip.name}`;
+        ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
+        
+        renderDaily();
+        renderShop();
+
+        document.getElementById('quest-list').innerHTML = state.customQuests.map((q, i) => `
+            <div class="quest-item">
+                <div style="display:flex; justify-content:space-between;">
+                    <b>${q.name}</b> <span onclick="deleteQuest(${i})" style="color:var(--danger)">[X]</span>
+                </div>
+                <div class="timer-display">${Math.floor(q.remaining/60)}:${(q.remaining%60).toString().padStart(2,'0')}</div>
+                <button class="main-btn" onclick="startQuest(${i})" ${q.isRunning || q.isDone ? 'disabled' : ''}>
+                    ${q.isDone ? 'CONCLUÍDO' : (q.isRunning ? 'TREINANDO...' : 'INICIAR')}
+                </button>
+            </div>`).join('');
+    }
+
+    function openSettings() { document.getElementById('modal-settings').style.display = 'block'; }
+    function closeSettings() { document.getElementById('modal-settings').style.display = 'none'; }
+    function toggleMusic() {
+        const bg = document.getElementById('snd-bg');
+        if(bg.paused) { bg.play(); state.isMusicOn = true; } 
+        else { bg.pause(); state.isMusicOn = false; }
+    }
+    function showNotif(m) { document.getElementById('notif-message').innerText = m; document.getElementById('system-notification').style.display = 'block'; }
+    function closeNotif() { document.getElementById('system-notification').style.display = 'none'; }
+    function clearPenalty() { state.penaltyActive = false; document.getElementById('penalty-overlay').style.display = 'none'; save(); }
+
+    window.onload = () => {
+        const today = new Date().toDateString();
+        if (state.lastUpdate !== today) {
+            if (!state.dailyDone && state.lvl > 1) state.penaltyActive = true;
+            state.dailyDone = false;
+            state.dailyChecks = [];
+            state.lastUpdate = today;
+            save();
+        }
+        if (state.penaltyActive) document.getElementById('penalty-overlay').style.display = 'block';
+        renderAll();
+        updateRadar();
+    };
+</script>
+</body>
+</html>
