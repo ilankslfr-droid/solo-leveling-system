@@ -38,7 +38,7 @@
         .main-btn:disabled { opacity: 0.2; cursor: not-allowed; }
         
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon); z-index: 2500; height: 70px; }
-        nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; }
+        nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; }
         nav button.active-nav { color: var(--neon); text-shadow: 0 0 10px var(--neon); }
 
         #modal-settings, #penalty-overlay, #system-notification { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; }
@@ -58,12 +58,12 @@
 
     <div id="status-screen" class="screen active">
         <p id="player-title" style="color:var(--gold); font-family:'Orbitron'; font-size:0.7rem; margin:0;">TITULO: NOVATO</p>
-        <h2 style="font-family:'Orbitron'; margin:5px 0;">JOGADOR <span id="rank-txt" style="float:right; font-size:0.9rem; color:var(--neon);">[RANK E]</span></h2>
+        <h2 style="font-family:'Orbitron'; margin:5px 0;">SUNG JIN-WOO <span id="rank-txt" style="float:right; font-size:0.9rem; color:var(--neon);">[RANK E]</span></h2>
         
         <div style="background: rgba(0,212,255,0.05); padding: 10px; border: 1px solid rgba(0,212,255,0.1); margin-bottom: 10px;">
             <p style="font-size: 0.8rem; margin: 0;">LVL: <span id="lvl">1</span> | XP: <span id="xp-txt">0/100</span></p>
             <div class="xp-bg"><div id="xp-fill" class="xp-fill"></div></div>
-            <p style="font-size: 0.8rem; margin: 0; color:var(--gold);">GOLD: <span id="gold-txt">10000000</span></p>
+            <p style="font-size: 0.8rem; margin: 0; color:var(--gold);">GOLD: <span id="gold-txt">0</span></p>
         </div>
 
         <div class="stat-row"><span>STR</span> <span id="str" class="stat-val">10</span></div>
@@ -250,12 +250,12 @@
         }
         document.getElementById('shop-content').innerHTML = html;
 
-        // LINHA ADICIONADA: Ativa a cor neon no botão clicado
         document.querySelectorAll('.shop-tabs button').forEach(btn => {
             btn.classList.toggle('active-tab', btn.id === `tab-${currentShopTab}`);
         });
     }
 
+    // ADICIONADO: AVISO SE NÃO TIVER OURO
     function buyItem(type, price) { 
         if(state.gold >= price) { 
             state.gold -= price; 
@@ -264,15 +264,37 @@
             else if(type === 'xp_big') addXP(300);
             else state[type]++; 
             save(); 
-        } 
+        } else {
+            showNotif("OURO INSUFICIENTE!");
+        }
     }
-    function buyTitle(n, p) { if(state.gold >= p) { state.gold -= p; state.currentTitle = n; save(); } }
-    function buyEquip(n, m, p) { if(state.gold >= p) { state.gold -= p; state.activeEquip = {name:n, multiplier:m}; save(); } }
+    
+    // ADICIONADO: AVISO SE NÃO TIVER OURO
+    function buyTitle(n, p) { 
+        if(state.gold >= p) { 
+            state.gold -= p; state.currentTitle = n; save(); 
+        } else {
+            showNotif("OURO INSUFICIENTE!");
+        }
+    }
+    
+    // ADICIONADO: AVISO SE NÃO TIVER OURO
+    function buyEquip(n, m, p) { 
+        if(state.gold >= p) { 
+            state.gold -= p; state.activeEquip = {name:n, multiplier:m}; save(); 
+        } else {
+            showNotif("OURO INSUFICIENTE!");
+        }
+    }
 
     function updateRadar() {
         const ctx = document.getElementById('radarChart');
         if(!ctx) return;
         if(radarChart) radarChart.destroy();
+        
+        // ADICIONADO: Espaçamento para o gráfico não ocupar tudo
+        const maxStat = Math.max(state.str, state.agi, state.vit, state.int);
+        
         radarChart = new Chart(ctx, {
             type: 'radar',
             data: {
@@ -285,7 +307,16 @@
                 }]
             },
             options: {
-                scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff' }, ticks: { display: false }, suggestedMin: 0 } },
+                scales: { 
+                    r: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' }, 
+                        angleLines: { color: 'rgba(255,255,255,0.1)' }, 
+                        pointLabels: { color: '#00d4ff' }, 
+                        ticks: { display: false }, 
+                        suggestedMin: 0,
+                        suggestedMax: maxStat + 10 // << LINHA QUE RESOLVE O PROBLEMA DO RADAR
+                    } 
+                },
                 plugins: { legend: { display: false } },
                 maintainAspectRatio: false
             }
