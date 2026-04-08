@@ -197,6 +197,8 @@
                 <div class="shop-item"><b>BÊNÇÃO DE CELERIDADE</b> (+1 AGI)<button class="main-btn btn-gold" onclick="buyItem('agi', 300)">300 GOLD</button></div>
                 <div class="shop-item"><b>BÊNÇÃO DE INTELLECTO</b> (+1 INT)<button class="main-btn btn-gold" onclick="buyItem('int', 300)">300 GOLD</button></div>`;
         } else if (currentShopTab === 'titles') {
+            html = `<div class="shop-item"><b>CAÇADOR DE LOBOS</b><p>Prestígio Máximo</p><button class="main-btn btn-gold" onclick="buyTitle('CAÇADOR DE LOBOS', 500)">500 GOLD</button></div>`;
+            html = `<div class="shop-item"><b>ASSASSINO DE REIS</b><p>Prestígio Máximo</p><button class="main-btn btn-gold" onclick="buyTitle('ASSASSINO DE REIS', 1000)">1000 GOLD</button></div>`;
             html = `<div class="shop-item"><b>MONARCA DAS SOMBRAS</b><p>Prestígio Máximo</p><button class="main-btn btn-gold" onclick="buyTitle('MONARCA DAS SOMBRAS', 5000)">5000 GOLD</button></div>`;
         } else if (currentShopTab === 'equip') {
             html = `<div class="shop-item rarity-legend"><b>MANTO LENDÁRIO</b> (3.0x XP)<button class="main-btn btn-gold" onclick="buyEquip('MANTO LENDÁRIO', 3.0, 10000)">10000 GOLD</button></div>`;
