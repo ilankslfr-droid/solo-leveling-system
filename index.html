@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monarch System v10.0</title>
+    <title>Monarch System v10.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --neon: #00d4ff; --dark: #020b12; --panel: rgba(5, 15, 25, 0.95); --danger: #ff4444; --gold: #ffd700; }
         body { background: radial-gradient(circle at center, #0a192f 0%, var(--dark) 100%); color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; }
         
-        .hud-container { max-width: 420px; margin: 10px auto; padding: 20px; background: var(--panel); border: 1px solid var(--neon); box-shadow: 0 0 25px rgba(0, 212, 255, 0.2); position: relative; }
+        .hud-container { max-width: 420px; margin: 10px auto; padding: 20px; background: var(--panel); border: 1px solid var(--neon); box-shadow: 0 0 25px rgba(0, 212, 255, 0.2); }
         .screen { display: none; min-height: 550px; }
         .active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -18,8 +18,7 @@
         .hud-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--neon); padding-bottom: 8px; margin-bottom: 15px; }
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* Som/Config */
-        .settings-btn { background: none; border: none; color: var(--neon); font-size: 1.2rem; cursor: pointer; padding: 0; }
+        .settings-btn { background: none; border: none; color: var(--neon); font-size: 1.2rem; cursor: pointer; }
 
         .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,212,255,0.1); }
         .stat-val { color: var(--neon); font-family: 'Orbitron'; font-weight: bold; }
@@ -48,7 +47,7 @@
 </head>
 <body>
 
-<audio id="snd-tab" src="https://www.soundjay.com/buttons/sounds/button-50.mp3"></audio>
+<audio id="snd-tab" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
 <audio id="snd-bg" loop src="https://www.chosic.com/wp-content/uploads/2021/07/The-Darkest-Path.mp3"></audio>
 
 <div class="hud-container">
@@ -72,12 +71,15 @@
         <div class="stat-row"><span>VIT</span> <span id="vit" class="stat-val">10</span></div>
         <div class="stat-row"><span>INT</span> <span id="int" class="stat-val">10</span></div>
         <p id="active-equip-txt" style="font-size:0.65rem; color:var(--neon); margin-top:10px;">ITEM: NENHUM</p>
-        <div style="height: 160px; margin-top: 10px;"><canvas id="radarChart"></canvas></div>
+        
+        <div style="width: 100%; height: 200px; margin-top: 15px; position: relative;">
+            <canvas id="radarChart"></canvas>
+        </div>
     </div>
 
     <div id="daily-screen" class="screen">
-        <div id="daily-list"></div>
-        <button id="btn-collect" class="main-btn" disabled onclick="collectDailyRewards()" style="color:var(--gold); border-color:var(--gold);">COLETAR RECOMPENSAS</button>
+        <div id="daily-list" style="margin-top: 10px;"></div>
+        <button id="btn-collect" class="main-btn" disabled onclick="collectDailyRewards()" style="color:var(--gold); border-color:var(--gold); margin-top:20px;">COLETAR RECOMPENSAS</button>
     </div>
 
     <div id="custom-screen" class="screen">
@@ -117,11 +119,8 @@
 <div id="modal-settings">
     <div class="modal-content">
         <h2 style="font-family:'Orbitron'; color:var(--neon);">SYSTEM SETTINGS</h2>
-        <div style="margin: 20px 0;">
-            <p>MÚSICA DE FUNDO</p>
-            <button class="main-btn" onclick="toggleMusic()">ON / OFF</button>
-        </div>
-        <button class="main-btn" onclick="toggleSettings()">FECHAR</button>
+        <button class="main-btn" onclick="toggleMusic()">ON / OFF MÚSICA</button>
+        <button class="main-btn" onclick="toggleSettings()" style="margin-top:10px;">FECHAR</button>
     </div>
 </div>
 
@@ -134,47 +133,43 @@
     };
 
     let activeIntervals = {};
-    let radarChart;
-    let musicOn = false;
+    let radarChart = null;
 
-    function save() { localStorage.setItem('monarch_v8_save', JSON.stringify(state)); renderAll(); }
-    function getRequiredXP(lvl) { return 100 + (lvl - 1) * 10; }
-    function addXP(amount) { state.xp += amount * state.activeEquip.multiplier; while (state.xp >= getRequiredXP(state.lvl)) { state.xp -= getRequiredXP(state.lvl); state.lvl++; } }
-
-    function getRankLabel() {
-        if(state.lvl >= 81) return "S"; if(state.lvl >= 61) return "A"; if(state.lvl >= 41) return "B";
-        if(state.lvl >= 21) return "C"; if(state.lvl >= 11) return "D"; return "E";
+    function save() { 
+        localStorage.setItem('monarch_v8_save', JSON.stringify(state)); 
+        renderAll(); 
     }
 
-    // --- DAILY LOGIC ---
+    function getRankLabel() {
+        if(state.lvl >= 81) return "S"; if(state.lvl >= 11) return "D"; return "E";
+    }
+
     function getDailyTasks() {
-        const lvl = state.lvl;
-        if(lvl >= 81) return ["Flexões 1 Braço: 200", "Abdominais Dragon: 200", "Pistol Squat: 200", "Corrida c/ Peso: 20km"];
-        if(lvl >= 61) return ["Flexões Explosivas: 150", "Abdominais V: 150", "Agachamento Salto: 150", "Corrida: 15km"];
-        if(lvl >= 41) return ["Flexões Arqueiro: 100", "Abdominais Canivete: 100", "Agachamento Búlgaro: 100", "Corrida: 10km"];
-        if(lvl >= 21) return ["Flexões Diamante: 50", "Abdominais Infra: 50", "Agachamento Sumô: 50", "Corrida: 5km"];
-        if(lvl >= 11) return ["Flexões Declinadas: 25", "Abdominais: 25", "Afundos: 25", "Corrida: 3km"];
+        if(state.lvl >= 11) return ["Flexões Declinadas: 25", "Abdominais: 25", "Afundos: 25", "Corrida: 3km"];
         return ["Flexões: 12", "Abdominais: 12", "Agachamentos: 12", "Corrida: 2km"];
     }
 
     function renderDaily() {
         const tasks = getDailyTasks();
         if (state.dailyChecks.length !== tasks.length) state.dailyChecks = new Array(tasks.length).fill(false);
-        
-        let html = tasks.map((t, i) => `
+        const list = document.getElementById('daily-list');
+        if(!list) return;
+
+        list.innerHTML = tasks.map((t, i) => `
             <div class="daily-item">
                 <input type="checkbox" onchange="toggleDaily(${i})" ${state.dailyChecks[i] ? 'checked' : ''} ${state.dailyDone ? 'disabled' : ''}> 
                 <span style="${state.dailyChecks[i] ? 'text-decoration:line-through; opacity:0.5;' : ''}">${t}</span>
             </div>`).join('');
-        
-        document.getElementById('daily-list').innerHTML = html;
         document.getElementById('btn-collect').disabled = !state.dailyChecks.every(v => v) || state.dailyDone;
     }
 
     function toggleDaily(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    function collectDailyRewards() { state.gold += 100; addXP(50); state.str++; state.dailyDone = true; save(); }
+    
+    function collectDailyRewards() { 
+        state.gold += 100; state.xp += 50; state.str++; state.dailyDone = true; 
+        save(); 
+    }
 
-    // --- CUSTOM QUEST LOGIC ---
     function createNewQuest() {
         const n = document.getElementById('q-name').value;
         const t = parseInt(document.getElementById('q-time').value);
@@ -193,7 +188,6 @@
                 state.customQuests[i].isRunning = false;
                 state.customQuests[i].isDone = true;
                 state[state.customQuests[i].attr]++;
-                addXP(20); state.gold += 25;
                 save();
             } else {
                 state.customQuests[i].remaining--;
@@ -203,18 +197,62 @@
         renderAll();
     }
 
-    function deleteQuest(i) { clearInterval(activeIntervals[i]); state.customQuests.splice(i, 1); save(); }
+    function updateRadar() {
+        const canvas = document.getElementById('radarChart');
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if(radarChart) radarChart.destroy();
+        radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['STR', 'AGI', 'VIT', 'INT'],
+                datasets: [{
+                    data: [state.str, state.agi, state.vit, state.int],
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderColor: '#00d4ff',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#00d4ff'
+                }]
+            },
+            options: {
+                scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff', font: { size: 10 } }, ticks: { display: false }, suggestedMin: 0 } },
+                plugins: { legend: { display: false } },
+                maintainAspectRatio: false
+            }
+        });
+    }
 
-    // --- SYSTEM UI ---
     function changeTab(id) {
-        document.getElementById('snd-tab').play();
+        const snd = document.getElementById('snd-tab');
+        if(snd) { snd.currentTime = 0; snd.play().catch(()=>{}); }
+        
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(`${id}-screen`).classList.add('active');
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav'));
         document.getElementById(`nav-${id}`).classList.add('active-nav');
         document.getElementById('screen-title').innerText = id.toUpperCase();
-        if(id==='status') setTimeout(updateRadar, 50);
+        
+        if(id === 'status') setTimeout(updateRadar, 100);
         renderAll();
+    }
+
+    function renderAll() {
+        document.getElementById('lvl').innerText = state.lvl;
+        document.getElementById('gold-txt').innerText = state.gold;
+        document.getElementById('rank-txt').innerText = `[RANK ${getRankLabel()}]`;
+        document.getElementById('player-title').innerText = `TITULO: ${state.currentTitle}`;
+        ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
+        
+        renderDaily();
+
+        document.getElementById('quest-list').innerHTML = state.customQuests.map((q, i) => `
+            <div class="quest-item">
+                <b style="font-size:0.7rem; color:var(--neon);">${q.name.toUpperCase()}</b>
+                <div class="timer-display">${Math.floor(q.remaining/60)}:${(q.remaining%60).toString().padStart(2,'0')}</div>
+                <button class="main-btn" onclick="startQuest(${i})" ${q.isRunning || q.isDone ? 'disabled' : ''}>
+                    ${q.isDone ? 'CONCLUÍDO' : (q.isRunning ? 'TREINANDO...' : 'INICIAR')}
+                </button>
+            </div>`).join('');
     }
 
     function toggleSettings() {
@@ -224,51 +262,12 @@
 
     function toggleMusic() {
         const bg = document.getElementById('snd-bg');
-        if(musicOn) { bg.pause(); musicOn = false; }
-        else { bg.play(); musicOn = true; }
-    }
-
-    function renderAll() {
-        const reqXP = getRequiredXP(state.lvl);
-        document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('xp-txt').innerText = `${Math.floor(state.xp)}/${reqXP}`;
-        document.getElementById('xp-fill').style.width = `${(state.xp / reqXP) * 100}%`;
-        document.getElementById('gold-txt').innerText = state.gold;
-        document.getElementById('player-title').innerText = `TITULO: ${state.currentTitle}`;
-        document.getElementById('rank-txt').innerText = `[RANK ${getRankLabel()}]`;
-        document.getElementById('active-equip-txt').innerText = `ITEM: ${state.activeEquip.name}`;
-        
-        ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
-        
-        renderDaily();
-        
-        document.getElementById('quest-list').innerHTML = state.customQuests.map((q, i) => `
-            <div class="quest-item">
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--neon); font-family:'Orbitron';">
-                    <span>${q.name} (+1 ${q.attr.toUpperCase()})</span>
-                    <span onclick="deleteQuest(${i})" style="color:var(--danger); cursor:pointer;">[X]</span>
-                </div>
-                <div class="timer-display">${Math.floor(q.remaining/60)}:${(q.remaining%60).toString().padStart(2,'0')}</div>
-                <button class="main-btn" onclick="startQuest(${i})" ${q.isRunning || q.isDone ? 'disabled' : ''}>
-                    ${q.isDone ? 'MISSÃO CONCLUÍDA' : (q.isRunning ? 'EM ANDAMENTO...' : 'INICIAR MISSÃO')}
-                </button>
-            </div>`).join('');
-    }
-
-    function updateRadar() {
-        const ctx = document.getElementById('radarChart'); if(!ctx) return;
-        if(radarChart) radarChart.destroy();
-        radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: { labels: ['STR', 'AGI', 'VIT', 'INT'], datasets: [{ data: [state.str, state.agi, state.vit, state.int], backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] },
-            options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff' }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 30 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }
-        });
+        if(bg.paused) bg.play(); else bg.pause();
     }
 
     window.onload = () => {
-        const today = new Date().toDateString();
-        if (state.lastUpdate !== today) { state.dailyDone = false; state.dailyChecks = []; state.lastUpdate = today; save(); }
         renderAll();
+        updateRadar();
     };
 </script>
 </body>
