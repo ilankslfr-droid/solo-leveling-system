@@ -189,7 +189,7 @@
     }
 
     function toggleDaily(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    function collectDailyRewards() { state.gold += 100; addXP(50); state.str++; state.dailyDone = true; save(); }
+    function collectDailyRewards() { state.gold += 50; addXP(50); state.str++; state.dailyDone = true; save(); }
 
     function createNewQuest() {
         const n = document.getElementById('q-name').value;
