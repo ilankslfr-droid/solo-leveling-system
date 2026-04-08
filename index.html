@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monarch System v9.0 - Awakening</title>
+    <title>Monarch System v9.5 - Armory</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --neon: #00d4ff; --dark: #020b12; --panel: rgba(5, 15, 25, 0.95); --danger: #ff4444; --gold: #ffd700; }
+        :root { --neon: #00d4ff; --dark: #020b12; --panel: rgba(5, 15, 25, 0.95); --danger: #ff4444; --gold: #ffd700; --rare: #b042ff; --epic: #ff8000; --legendary: #ff3e3e; }
         body { background: radial-gradient(circle at center, #0a192f 0%, var(--dark) 100%); color: white; font-family: 'Roboto Condensed', sans-serif; margin: 0; padding-bottom: 100px; overflow-x: hidden; touch-action: manipulation; }
         
-        /* HUD UI */
         .settings-btn { position: fixed; top: 15px; right: 15px; font-size: 1.8rem; cursor: pointer; z-index: 3000; color: var(--neon); filter: drop-shadow(0 0 5px var(--neon)); }
         .settings-menu { display: none; position: fixed; top: 60px; right: 15px; background: var(--panel); border: 1px solid var(--neon); padding: 15px; z-index: 3000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .hud-container { max-width: 420px; margin: 10px auto; padding: 20px; background: var(--panel); border: 1px solid var(--neon); box-shadow: 0 0 25px rgba(0, 212, 255, 0.2); position: relative; }
@@ -20,31 +19,40 @@
         
         .hud-header h1 { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--neon); border-bottom: 1px solid var(--neon); padding-bottom: 8px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         
-        /* Stats & XP */
+        /* Stats e XP */
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(0,212,255,0.1); }
         .stat-val { color: var(--neon); font-family: 'Orbitron'; font-weight: bold; }
         .xp-bg { background: #111; height: 10px; width: 100%; margin: 10px 0; border: 1px solid #333; }
         .xp-fill { background: var(--neon); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--neon); }
 
-        /* Items & Quests */
-        .daily-item, .quest-item, .shop-item { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); margin-bottom: 12px; padding: 15px; }
-        .daily-item { display: flex; align-items: center; gap: 15px; font-family: 'Orbitron'; font-size: 0.8rem; text-transform: uppercase; }
+        /* Estética Custom Quest (Restaurada) */
+        .quest-item { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); margin-bottom: 12px; padding: 15px; }
+        .daily-item { display: flex; align-items: center; gap: 15px; background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.1); margin-bottom: 12px; padding: 15px; font-family: 'Orbitron'; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
         .timer-display { font-family: 'Orbitron'; color: var(--neon); font-size: 1.4rem; text-align: center; margin: 10px 0; }
         
+        /* Botões e Inputs */
+        input[type="text"], input[type="number"], select { background: #000; border: 1px solid var(--neon); color: white; padding: 10px; font-family: 'Orbitron'; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
         .main-btn { width: 100%; background: #000; border: 1px solid var(--neon); color: white; padding: 15px; font-family: 'Orbitron'; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-weight: bold; }
         .main-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn-danger { border-color: var(--danger); color: var(--danger); }
         .btn-gold { border-color: var(--gold); color: var(--gold); }
 
-        /* Navigation */
+        /* Categorias do Shop */
+        .shop-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .shop-tabs button { flex: 1; padding: 8px; font-size: 0.6rem; border: 1px solid var(--neon); background: none; color: var(--neon); font-family: 'Orbitron'; cursor: pointer; }
+        .shop-tabs button.active-tab { background: var(--neon); color: black; }
+        .shop-item { background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--neon); padding: 10px; margin-bottom: 10px; }
+        .rarity-common { border-left-color: #fff; }
+        .rarity-rare { border-left-color: var(--rare); color: var(--rare); }
+        .rarity-epic { border-left-color: var(--epic); color: var(--epic); }
+        .rarity-legend { border-left-color: var(--legendary); color: var(--legendary); }
+
         nav { position: fixed; bottom: 0; width: 100%; display: flex; background: rgba(2, 11, 18, 0.98); border-top: 1px solid var(--neon); z-index: 2500; height: 70px; }
         nav button { flex: 1; background: none; border: none; color: #444; font-family: 'Orbitron'; font-size: 0.6rem; cursor: pointer; text-transform: uppercase; }
         nav button.active-nav { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
 
-        /* Popups */
         #system-notification, #penalty-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; text-align: center; backdrop-filter: blur(10px); }
         .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; background: var(--panel); border: 2px solid var(--neon); padding: 30px; }
-        .penalty-text { color: var(--danger); font-family: 'Orbitron'; font-size: 1.5rem; text-shadow: 0 0 10px var(--danger); }
     </style>
 </head>
 <body>
@@ -59,9 +67,10 @@
 <div class="hud-container">
     <div id="status-screen" class="screen active">
         <div class="hud-header"><h1>PLAYER STATUS</h1></div>
-        <p id="player-title" style="color:var(--gold); font-family:'Orbitron'; font-size:0.7rem; margin:0; letter-spacing:2px;">TITULO: NOVATO</p>
-        <h2 style="font-family:'Orbitron'; margin:5px 0; font-size: 1.4rem;">SUNG JIN-WOO <span id="rank-txt" style="float:right; font-size:0.9rem; color:var(--neon);">[RANK E]</span></h2>
+        <p id="player-title" style="color:var(--gold); font-family:'Orbitron'; font-size:0.7rem; margin:0;">TITULO: NOVATO</p>
+        <h2 style="font-family:'Orbitron'; margin:5px 0;">JOGADOR <span id="rank-txt" style="float:right; font-size:0.9rem; color:var(--neon);">[RANK E]</span></h2>
         <p id="player-job" style="color:var(--neon); font-size:0.8rem; margin-bottom:10px;">CLASSE: NENHUMA</p>
+        <p id="equip-info" style="font-size:0.7rem; color:var(--epic); margin-bottom:5px;">EQUIP: NENHUM (1x XP)</p>
         
         <p style="font-size: 0.8rem; margin: 5px 0;">LVL: <span id="lvl">1</span> | XP: <span id="xp-txt">0/100</span> | <span style="color:var(--gold);">GOLD: <span id="gold-txt">0</span></span></p>
         <div class="xp-bg"><div id="xp-fill" class="xp-fill"></div></div>
@@ -70,7 +79,6 @@
         <div class="stat-row"><span>AGI</span> <span id="agi" class="stat-val">10</span></div>
         <div class="stat-row"><span>VIT</span> <span id="vit" class="stat-val">10</span></div>
         <div class="stat-row"><span>INT</span> <span id="int" class="stat-val">10</span></div>
-        
         <div id="job-btn-container"></div>
         <div style="height: 180px; margin-top: 15px;"><canvas id="radarChart"></canvas></div>
     </div>
@@ -84,8 +92,8 @@
     <div id="custom-screen" class="screen">
         <div class="hud-header"><h1>TRAINING</h1></div>
         <div style="margin-bottom: 20px;">
-            <input type="text" id="q-name" placeholder="NOME DO TREINO...">
-            <div style="display: flex; gap: 5px; margin-top:5px;">
+            <input type="text" id="q-name" placeholder="NOME DO TREINO..." style="margin-bottom:5px;">
+            <div style="display: flex; gap: 5px;">
                 <select id="q-attr" style="flex: 2;">
                     <option value="str">FORÇA (STR)</option>
                     <option value="agi">AGILIDADE (AGI)</option>
@@ -94,38 +102,33 @@
                 </select>
                 <input type="number" id="q-time" placeholder="MIN" style="flex: 1;">
             </div>
-            <button onclick="createNewQuest()" class="main-btn">ADICIONAR</button>
+            <button onclick="createNewQuest()" class="main-btn">ADICIONAR MISSÃO</button>
         </div>
         <div id="quest-list"></div>
     </div>
 
     <div id="shop-screen" class="screen">
         <div class="hud-header"><h1>SYSTEM SHOP</h1></div>
-        <div class="shop-item">
-            <p><b>POÇÃO DE XP</b> (+50 XP)</p>
-            <button class="main-btn btn-gold" onclick="buyItem('xp_potion', 150)">COMPRAR (150 GOLD)</button>
+        <div class="shop-tabs">
+            <button onclick="setShopTab('potions')" id="tab-potions" class="active-tab">POÇÕES</button>
+            <button onclick="setShopTab('titles')" id="tab-titles">TÍTULOS</button>
+            <button onclick="setShopTab('equip')" id="tab-equip">EQUIP</button>
         </div>
-        <div class="shop-item">
-            <p><b>BÊNÇÃO DE ATRIBUTO</b> (+1 STR)</p>
-            <button class="main-btn btn-gold" onclick="buyItem('str_boost', 300)">COMPRAR (300 GOLD)</button>
-        </div>
+        <div id="shop-content"></div>
     </div>
 
     <div id="penalty-overlay">
         <div class="modal-content">
-            <h1 class="penalty-text">MISSÃO DE PENALIDADE!</h1>
-            <p>VOCÊ FALHOU NO TREINO DIÁRIO.</p>
-            <div style="text-align:left; background:rgba(255,0,0,0.1); padding:10px; font-size:0.8rem;">
-                - 100 FLEXÕES<br>- 100 ABDOMINAIS<br>- 100 AGACHAMENTOS<br>- 10KM CORRIDA
-            </div>
+            <h1 style="color:var(--danger); font-family:'Orbitron';">PENALIDADE!</h1>
+            <p>MISSÃO DIÁRIA NÃO CONCLUÍDA.</p>
             <button class="main-btn btn-danger" onclick="clearPenalty()">EU SOBREVIVI AO TREINO</button>
         </div>
     </div>
 
     <div id="system-notification">
         <div class="modal-content">
-            <h2 id="notif-title" style="font-family:'Orbitron'; color:var(--neon); margin:0;">NOTIFICAÇÃO</h2>
-            <p id="notif-message" style="margin:15px 0; font-size: 0.9rem;"></p>
+            <h2 id="notif-title" style="font-family:'Orbitron'; color:var(--neon);">NOTIFICAÇÃO</h2>
+            <p id="notif-message"></p>
             <button onclick="closeNotif()" class="main-btn">OK</button>
         </div>
     </div>
@@ -139,102 +142,76 @@
 </nav>
 
 <script>
-    // --- ESTADO INICIAL E MIGRAÇÃO ---
     let state = JSON.parse(localStorage.getItem('monarch_v8_save')) || {
-        lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10,
+        lvl: 1, xp: 0, str: 10, agi: 10, vit: 10, int: 10, gold: 0,
         dailyChecks: [false, false, false, false], dailyDone: false,
-        customQuests: [], musicEnabled: true
+        customQuests: [], job: "", titles: ["NOVATO"], currentTitle: "NOVATO",
+        activeEquip: { name: "NENHUM", multiplier: 1 }, musicEnabled: true,
+        lastUpdate: new Date().toDateString(), penaltyActive: false
     };
 
-    // Migração de campos novos (Garante que o usuário não perca XP)
-    const defaults = { 
-        job: "", gold: 0, inventory: [], titles: ["NOVATO"], currentTitle: "NOVATO", 
-        lastUpdate: new Date().toDateString(), streak: 0, penaltyActive: false 
-    };
-    Object.keys(defaults).forEach(key => { if(state[key] === undefined) state[key] = defaults[key]; });
-
+    let currentShopTab = 'potions';
     let radarChart;
-    let activeIntervals = {};
     const sfx = new Audio("sons/aba.m4a");
     const bgm = new Audio("sons/tema.m4a");
-    let isBgmInitialized = false;
 
-    // --- LOGICA DE XP E LEVEL ---
+    function save() { localStorage.setItem('monarch_v8_save', JSON.stringify(state)); renderAll(); }
+
     function getRequiredXP(lvl) { return 100 + (lvl - 1) * 10; }
-    function checkLevelUp() {
+    
+    function addXP(amount) {
+        state.xp += amount * state.activeEquip.multiplier;
         while (state.xp >= getRequiredXP(state.lvl)) {
             state.xp -= getRequiredXP(state.lvl);
             state.lvl++;
-            checkAchievements();
         }
     }
 
-    // --- PENALIDADE ---
-    function checkPenalty() {
-        const today = new Date().toDateString();
-        if (state.lastUpdate !== today) {
-            if (!state.dailyDone && state.lvl > 1) { state.penaltyActive = true; }
-            state.dailyDone = false;
-            state.dailyChecks = [false, false, false, false];
-            state.lastUpdate = today;
-            save();
+    function setShopTab(tab) {
+        currentShopTab = tab;
+        document.querySelectorAll('.shop-tabs button').forEach(b => b.classList.remove('active-tab'));
+        document.getElementById(`tab-${tab}`).classList.add('active-tab');
+        renderShop();
+    }
+
+    function renderShop() {
+        let html = '';
+        if (currentShopTab === 'potions') {
+            html = `
+                <div class="shop-item"><b>POÇÃO DE XP</b> (+50 XP)<br><button class="main-btn btn-gold" onclick="buyItem('xp', 150)">150 GOLD</button></div>
+                <div class="shop-item"><b>BÊNÇÃO DE FORÇA</b> (+1 STR)<br><button class="main-btn btn-gold" onclick="buyItem('str', 300)">300 GOLD</button></div>`;
+        } else if (currentShopTab === 'titles') {
+            html = `
+                <div class="shop-item"><b>TÍTULO: ASSASSINO DE REIS</b><br><button class="main-btn btn-gold" onclick="buyTitle('ASSASSINO DE REIS', 1000)">1000 GOLD</button></div>
+                <div class="shop-item"><b>TÍTULO: MONARCA DAS SOMBRAS</b><br><button class="main-btn btn-gold" onclick="buyTitle('MONARCA DAS SOMBRAS', 5000)">5000 GOLD</button></div>`;
+        } else if (currentShopTab === 'equip') {
+            html = `
+                <div class="shop-item rarity-common"><b>ADAGA COMUM</b> (1.5x XP)<br><button class="main-btn btn-gold" onclick="buyEquip('ADAGA COMUM', 1.5, 500)">500 GOLD</button></div>
+                <div class="shop-item rarity-rare"><b>ELMO RARO</b> (2.0x XP)<br><button class="main-btn btn-gold" onclick="buyEquip('ELMO RARO', 2.0, 1500)">1500 GOLD</button></div>
+                <div class="shop-item rarity-epic"><b>ARMADURA ÉPICA</b> (2.5x XP)<br><button class="main-btn btn-gold" onclick="buyEquip('ARMADURA ÉPICA', 2.5, 4000)">4000 GOLD</button></div>
+                <div class="shop-item rarity-legend"><b>MANTO LENDÁRIO</b> (3.0x XP)<br><button class="main-btn btn-gold" onclick="buyEquip('MANTO LENDÁRIO', 3.0, 10000)">10000 GOLD</button></div>`;
         }
-        if (state.penaltyActive) document.getElementById('penalty-overlay').style.display = 'block';
+        document.getElementById('shop-content').innerHTML = html;
     }
 
-    function clearPenalty() { state.penaltyActive = false; document.getElementById('penalty-overlay').style.display = 'none'; save(); }
-
-    // --- MUDANÇA DE CLASSE ---
-    function openJobSelection() {
-        showNotif("MUDANÇA DE CLASSE DISPONÍVEL! ESCOLHA SEU CAMINHO:<br><br>" +
-            "<button class='main-btn' onclick='selectJob(\"ASSASSINO\")'>ASSASSINO (+5 AGI)</button>" +
-            "<button class='main-btn' onclick='selectJob(\"LUTADOR\")'>LUTADOR (+5 STR)</button>" +
-            "<button class='main-btn' onclick='selectJob(\"TANQUE\")'>TANQUE (+5 VIT)</button>");
-    }
-
-    function selectJob(job) {
-        state.job = job;
-        if(job === "ASSASSINO") state.agi += 5;
-        if(job === "LUTADOR") state.str += 5;
-        if(job === "TANQUE") state.vit += 5;
-        state.currentTitle = "O DESPERTO";
-        closeNotif(); save();
-    }
-
-    // --- CONQUISTAS ---
-    function checkAchievements() {
-        if (state.lvl >= 10 && !state.titles.includes("CAÇADOR RANK D")) state.titles.push("CAÇADOR RANK D");
-        if (state.lvl >= 40 && state.job === "") { /* Gatilho para Job Change na renderização */ }
-        if (state.streak >= 7 && !state.titles.includes("INABALÁVEL")) state.titles.push("INABALÁVEL");
-    }
-
-    // --- SHOP ---
-    function buyItem(id, price) {
+    function buyItem(type, price) {
         if (state.gold >= price) {
             state.gold -= price;
-            if (id === 'xp_potion') { state.xp += 50; checkLevelUp(); }
-            if (id === 'str_boost') state.str += 1;
-            showNotif("ITEM ADQUIRIDO COM SUCESSO!");
-            save();
+            if (type === 'xp') addXP(50);
+            if (type === 'str') state.str++;
+            showNotif("COMPRA CONCLUÍDA!"); save();
         } else { showNotif("GOLD INSUFICIENTE!"); }
     }
 
-    // --- SISTEMA CORE ---
-    function save() { localStorage.setItem('monarch_v8_save', JSON.stringify(state)); renderAll(); }
-    function toggleSettings() { const menu = document.getElementById('settings-menu'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; }
-    function updateMusicPref() { state.musicEnabled = document.getElementById('music-toggle').checked; state.musicEnabled ? bgm.play() : bgm.pause(); save(); }
-
-    function initAudio() {
-        if (state.musicEnabled && !isBgmInitialized) {
-            bgm.loop = true; bgm.volume = 0.4; bgm.play().catch(()=>{});
-            setInterval(() => { if (bgm.currentTime >= 17.5) bgm.currentTime = 0; }, 500);
-            isBgmInitialized = true;
-        }
-        sfx.currentTime = 0; sfx.play().catch(()=>{});
+    function buyTitle(name, price) {
+        if (state.gold >= price) { state.gold -= price; state.currentTitle = name; showNotif("TÍTULO EQUIPADO!"); save(); }
+        else { showNotif("GOLD INSUFICIENTE!"); }
     }
 
-    function showNotif(msg) { document.getElementById('notif-message').innerHTML = msg; document.getElementById('system-notification').style.display = 'block'; sfx.currentTime = 0; sfx.play(); }
-    function closeNotif() { document.getElementById('system-notification').style.display = 'none'; }
+    function buyEquip(name, mult, price) {
+        if (state.gold >= price) { state.gold -= price; state.activeEquip = { name, multiplier: mult }; showNotif("EQUIPAMENTO ATIVADO!"); save(); }
+        else { showNotif("GOLD INSUFICIENTE!"); }
+    }
 
     function renderAll() {
         const reqXP = getRequiredXP(state.lvl);
@@ -244,100 +221,79 @@
         document.getElementById('gold-txt').innerText = state.gold;
         document.getElementById('player-title').innerText = `TITULO: ${state.currentTitle}`;
         document.getElementById('player-job').innerText = `CLASSE: ${state.job || "NENHUMA"}`;
+        document.getElementById('equip-info').innerText = `EQUIP: ${state.activeEquip.name} (${state.activeEquip.multiplier}x XP)`;
         ['str','agi','vit','int'].forEach(s => document.getElementById(s).innerText = state[s]);
 
-        // Botão de Classe no Nível 40
-        const btnCont = document.getElementById('job-btn-container');
-        btnCont.innerHTML = (state.lvl >= 40 && state.job === "") ? `<button class="main-btn btn-gold" onclick="openJobSelection()">PROVA DE MUDANÇA DE CLASSE</button>` : "";
-
-        // Exercícios por Rank (Igual v8.5)
+        // Daily Quest Logic
         let rank = "E";
-        let dailyTasks = ["Flexões: 12", "Abdominais: 12", "Agachamentos: 12", "Corrida: 2km"];
-        if (state.lvl >= 81) { rank = "S"; dailyTasks = ["Flexões 1 Braço: 200", "Dragon Flag: 200", "Box Jumps: 200", "Corrida c/ Carga: 20km"]; }
-        else if (state.lvl >= 61) { rank = "A"; dailyTasks = ["Flexões Explosivas: 150", "Abdom. Canivete: 150", "Pistol Squat: 150", "Corrida Subida: 15km"]; }
-        else if (state.lvl >= 41) { rank = "B"; dailyTasks = ["Flexões Arqueiro: 100", "Prancha Dinâmica: 100", "Agach. Búlgaro: 100", "Shadow Boxing: 10km"]; }
-        else if (state.lvl >= 21) { rank = "C"; dailyTasks = ["Flexões Diamante: 50", "Elevação Pernas: 50", "Agach. Sumô Salto: 50", "Corrida Sprint: 5km"]; }
-        else if (state.lvl >= 11) { rank = "D"; dailyTasks = ["Flexões Declinadas: 25", "V-Ups: 25", "Afundo: 25", "Burpees: 3km"]; }
+        let tasks = ["Flexões: 12", "Abdominais: 12", "Agachamentos: 12", "Corrida: 2km"];
+        if (state.lvl >= 11) { rank = "D"; tasks = ["Flexões Declinadas: 25", "V-Ups: 25", "Afundo: 25", "Burpees: 3km"]; }
         document.getElementById('rank-txt').innerText = `[RANK ${rank}]`;
-
-        document.getElementById('daily-list').innerHTML = dailyTasks.map((t, i) => `
+        document.getElementById('daily-list').innerHTML = tasks.map((t, i) => `
             <div class="daily-item">
                 <input type="checkbox" onchange="toggleDaily(${i})" ${state.dailyChecks[i] ? 'checked' : ''} ${state.dailyDone ? 'disabled' : ''}> 
                 <span class="${state.dailyChecks[i] ? 'completed' : ''}">${t}</span>
             </div>`).join('');
         document.getElementById('btn-collect').disabled = !state.dailyChecks.every(v => v) || state.dailyDone;
 
-        // Custom Training Quests
-        document.getElementById('quest-list').innerHTML = state.customQuests.map((q, i) => {
-            let controls = q.isDone ? `<button class="main-btn" disabled>CONCLUÍDO</button>` : 
-                           q.isRunning ? `<div style="display:flex; gap:5px;"><button class="main-btn" onclick="pauseQuestTimer(${i})">PAUSAR</button><button class="main-btn btn-danger" onclick="cancelQuestTimer(${i})">CANCELAR</button></div>` :
-                           `<button class="main-btn" onclick="startQuestTimer(${i})">${q.remaining < q.totalTime ? 'RETOMAR' : 'INICIAR'}</button>`;
-
-            return `<div class="quest-item">
-                <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-family:'Orbitron';">
+        // Custom Quest UI (Beautified)
+        document.getElementById('quest-list').innerHTML = state.customQuests.map((q, i) => `
+            <div class="quest-item">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-family:'Orbitron'; color:var(--neon);">
                     <span>${q.name} (+1 ${q.attr.toUpperCase()})</span>
-                    <span onclick="deleteQuest(${i})" style="color:red; cursor:pointer;">[EXCLUIR]</span>
+                    <span onclick="deleteQuest(${i})" style="color:var(--danger); cursor:pointer;">[EXCLUIR]</span>
                 </div>
                 <div class="timer-display" id="timer-${i}">${formatSeconds(q.remaining)}</div>
-                ${controls}
-            </div>`;
-        }).join('');
+                <div style="display:flex; gap:5px;">
+                    ${q.isDone ? '<button class="main-btn" disabled>CONCLUÍDO</button>' : 
+                      q.isRunning ? `<button class="main-btn" onclick="pauseQuest(${i})">PAUSAR</button><button class="main-btn btn-danger" onclick="cancelQuest(${i})">CANCELAR</button>` :
+                      `<button class="main-btn" onclick="startQuest(${i})">${q.remaining < q.totalTime ? 'RETOMAR' : 'INICIAR'}</button>`}
+                </div>
+            </div>`).join('');
+        renderShop();
         updateRadar();
     }
 
-    function toggleDaily(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
-    function collectDailyRewards() { 
-        state.xp += 50; state.str++; state.agi++; state.gold += 100; state.streak++;
-        state.dailyDone = true; checkLevelUp(); showNotif("MISSÃO DIÁRIA CONCLUÍDA! +100 GOLD"); save(); 
-    }
-    
-    function createNewQuest() { 
-        const name = document.getElementById('q-name').value; 
-        const attr = document.getElementById('q-attr').value; 
-        const mins = parseInt(document.getElementById('q-time').value) || 1; 
-        if (name) { state.customQuests.push({ name, attr, remaining: mins * 60, totalTime: mins * 60, isRunning: false, isDone: false }); save(); } 
-    }
-
-    function startQuestTimer(i) {
+    function startQuest(i) {
         if (state.customQuests[i].isRunning) return;
-        initAudio();
         state.customQuests[i].isRunning = true;
         activeIntervals[i] = setInterval(() => {
             if (state.customQuests[i].remaining <= 0) {
                 clearInterval(activeIntervals[i]);
                 state.customQuests[i].isRunning = false; state.customQuests[i].isDone = true;
-                state[state.customQuests[i].attr]++; state.xp += 15; state.gold += 20; checkLevelUp();
-                showNotif(`TREINO FINALIZADO: +1 ${state.customQuests[i].attr.toUpperCase()} e +20 GOLD`);
-                save();
+                state[state.customQuests[i].attr]++; state.gold += 20; addXP(15);
+                showNotif("TREINO FINALIZADO!"); save();
             } else { state.customQuests[i].remaining--; renderAll(); }
         }, 1000);
-        renderAll();
+        save();
     }
 
-    function pauseQuestTimer(i) { clearInterval(activeIntervals[i]); state.customQuests[i].isRunning = false; save(); }
-    function cancelQuestTimer(i) { clearInterval(activeIntervals[i]); state.customQuests[i].isRunning = false; state.customQuests[i].remaining = state.customQuests[i].totalTime; save(); }
+    function toggleDaily(i) { state.dailyChecks[i] = !state.dailyChecks[i]; save(); }
+    function collectDailyRewards() { state.gold += 100; addXP(50); state.str++; state.dailyDone = true; showNotif("RECOMPENSA COLETADA!"); save(); }
+    function createNewQuest() { 
+        const name = document.getElementById('q-name').value;
+        const mins = parseInt(document.getElementById('q-time').value);
+        if(name && mins) { state.customQuests.push({name, attr: document.getElementById('q-attr').value, remaining: mins*60, totalTime: mins*60, isRunning: false, isDone: false}); save(); }
+    }
+    function pauseQuest(i) { clearInterval(activeIntervals[i]); state.customQuests[i].isRunning = false; save(); }
+    function cancelQuest(i) { clearInterval(activeIntervals[i]); state.customQuests[i].isRunning = false; state.customQuests[i].remaining = state.customQuests[i].totalTime; save(); }
     function deleteQuest(i) { clearInterval(activeIntervals[i]); state.customQuests.splice(i, 1); save(); }
     function formatSeconds(s) { return `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
-
+    function showNotif(msg) { document.getElementById('notif-message').innerText = msg; document.getElementById('system-notification').style.display = 'block'; }
+    function closeNotif() { document.getElementById('system-notification').style.display = 'none'; }
+    function changeTab(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(`${id}-screen`).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById(`nav-${id}`).classList.add('active-nav'); if(id==='status') setTimeout(updateRadar, 100); }
+    
     function updateRadar() {
-        const ctx = document.getElementById('radarChart'); if (!ctx) return;
-        if (radarChart) radarChart.destroy();
+        const ctx = document.getElementById('radarChart'); if(!ctx) return;
+        if(radarChart) radarChart.destroy();
         radarChart = new Chart(ctx, {
             type: 'radar',
-            data: {
-                labels: ['STR', 'AGI', 'VIT', 'INT'],
-                datasets: [{ data: [state.str, state.agi, state.vit, state.int], backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2, pointRadius: 2 }]
-            },
-            options: {
-                scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff', font: { family: 'Orbitron' } }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 55 } },
-                plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false
-            }
+            data: { labels: ['STR', 'AGI', 'VIT', 'INT'], datasets: [{ data: [state.str, state.agi, state.vit, state.int], backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] },
+            options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.05)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#00d4ff' }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 55 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }
         });
     }
 
-    function changeTab(id) { initAudio(); document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(`${id}-screen`).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById(`nav-${id}`).classList.add('active-nav'); if (id === 'status') setTimeout(updateRadar, 100); }
-    
-    window.onload = () => { checkPenalty(); renderAll(); };
+    window.onload = renderAll;
 </script>
 </body>
 </html>
