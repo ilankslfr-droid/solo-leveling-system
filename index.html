@@ -335,4 +335,9 @@
         });
     }
 
-    function changeTab(id) { initAudio(); document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.get
+    function changeTab(id) { initAudio(); document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(`${id}-screen`).classList.add('active'); document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-nav')); document.getElementById(`nav-${id}`).classList.add('active-nav'); if (id === 'status') setTimeout(updateRadar, 100); }
+    
+    window.onload = () => { checkPenalty(); renderAll(); };
+</script>
+</body>
+</html>
